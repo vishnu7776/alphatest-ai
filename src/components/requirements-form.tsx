@@ -102,10 +102,8 @@ export function RequirementsForm() {
       };
       
       recognitionRef.current.onend = () => {
-        if (isListening) {
-           // If it ends unexpectedly, restart it.
-           recognitionRef.current.start();
-        }
+        // The onend event can fire unexpectedly, so we only update state if it was a user-initiated stop.
+        // We will manage isListening state in start/stop functions directly.
       };
 
     } else {
@@ -117,7 +115,7 @@ export function RequirementsForm() {
         recognitionRef.current.stop();
       }
     };
-  }, [toast, isListening]);
+  }, [toast]);
   
 
   const startListening = () => {
