@@ -31,9 +31,9 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 
 const initialState = {
-  summary: '',
-  testCases: '',
-  error: '',
+  summary: undefined,
+  testCases: undefined,
+  error: undefined,
 };
 
 function SubmitButton({ disabled }: { disabled: boolean }) {
@@ -69,9 +69,11 @@ export function RequirementsForm() {
 
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { pending } = useFormStatus();
 
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
 
   useEffect(() => {
     if (state.error) {
@@ -83,7 +85,7 @@ export function RequirementsForm() {
        setIsLoading(false);
        setShowModal(false);
     }
-     if (state.summary || state.testCases) {
+     if (!state.error && (state.summary || state.testCases)) {
       setIsLoading(false);
       setShowModal(true);
     }
@@ -163,9 +165,8 @@ export function RequirementsForm() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
+    if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
-      setFile(selectedFile);
       handleUpload(selectedFile);
     }
   };
@@ -175,20 +176,18 @@ export function RequirementsForm() {
     e.stopPropagation();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const selectedFile = e.dataTransfer.files[0];
-      setFile(selectedFile);
       handleUpload(selectedFile);
     }
   };
 
-  const handleUpload = (file: File) => {
+  const handleUpload = (fileToUpload: File) => {
+    setFile(fileToUpload);
     setProgress(0);
     const reader = new FileReader();
 
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      setRequirementsText((prev) => (prev ? prev + '\n' : '') + content);
-      setProgress(100);
-    };
+    reader.onloadstart = () => {
+      setProgress(0);
+    }
 
     reader.onprogress = (event) => {
       if (event.lengthComputable) {
@@ -196,24 +195,44 @@ export function RequirementsForm() {
         setProgress(percentage);
       }
     };
+    
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      setRequirementsText((prev) => (prev ? prev + '\n' : '') + content);
+      setProgress(100);
+    };
 
-    reader.readAsText(file);
+    reader.onerror = () => {
+      toast({
+        variant: 'destructive',
+        title: 'File Error',
+        description: 'Failed to read the file.',
+      });
+      setProgress(0);
+    }
+
+    reader.readAsText(fileToUpload);
   };
 
   const handleRemoveFile = () => {
     setFile(null);
     setProgress(0);
-    // Optionally remove the file content from the textarea
-    // This part can be tricky if the content was edited.
-    // For simplicity, we can leave it or clear the whole textarea.
+    if(fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    // For simplicity, we can leave the content in the textarea 
+    // or the user can clear it manually.
   };
   
   const handleFormAction = (formData: FormData) => {
     setIsLoading(true);
     formAction(formData);
   };
+  
+  // This is a new state to show the final results after the modal.
+  const [showResults, setShowResults] = useState(false);
 
-  if (state.summary || state.testCases) {
+  if (showResults && (state.summary || state.testCases)) {
     return (
        <Card>
         <CardContent className="p-6">
@@ -239,7 +258,7 @@ export function RequirementsForm() {
 
   return (
     <>
-    <form action={handleFormAction} className="space-y-6">
+    <form ref={formRef} action={handleFormAction} className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3">
           <Card
@@ -257,6 +276,7 @@ export function RequirementsForm() {
                   TXT, PDF, DOC, DOCX
                 </p>
                 <input
+                  ref={fileInputRef}
                   type="file"
                   className="hidden"
                   id="file-upload"
@@ -354,7 +374,7 @@ export function RequirementsForm() {
         </Card>
       )}
 
-      {state.error && !pending && (
+      {state.error && (
         <Alert variant="destructive" className="mt-4">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Generation Failed</AlertTitle>
@@ -377,42 +397,34 @@ export function RequirementsForm() {
               Provide the final details for your application before generating the test cases.
             </DialogDescription>
           </DialogHeader>
-          {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="ml-4">Analyzing your requirements...</p>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="appName" className="text-right">
+                App Name
+              </Label>
+              <Input
+                id="appName"
+                defaultValue="My Healthcare App"
+                className="col-span-3"
+              />
             </div>
-          ) : (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="appName" className="text-right">
-                  App Name
-                </Label>
-                <Input
-                  id="appName"
-                  defaultValue="My Healthcare App"
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="objective" className="text-right">
-                  Objective
-                </Label>
-                <Textarea
-                  id="objective"
-                  defaultValue="To streamline patient record management and appointment scheduling."
-                  className="col-span-3"
-                  rows={4}
-                />
-              </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="objective" className="text-right">
+                Objective
+              </Label>
+              <Textarea
+                id="objective"
+                defaultValue="To streamline patient record management and appointment scheduling."
+                className="col-span-3"
+                rows={4}
+              />
             </div>
-          )}
+          </div>
           <DialogFooter>
              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
              <Button onClick={() => {
-                // Here you would typically proceed to the next step
-                // For now, we'll just close the modal.
-                setShowModal(false); 
+                setShowModal(false);
+                setShowResults(true); // Show the results view
                 toast({ title: "Success", description: "Test cases are being generated."});
               }}>Continue</Button>
           </DialogFooter>
