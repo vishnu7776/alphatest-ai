@@ -164,22 +164,24 @@ export function RequirementsForm() {
   const handleUpload = (file: File) => {
     setProgress(0);
     const reader = new FileReader();
+
     reader.onload = (e) => {
       const content = e.target?.result as string;
-       setRequirementsText(prev => (prev ? prev + '\n' : '') + content);
+      setRequirementsText((prev) => (prev ? prev + '\n' : '') + content);
     };
 
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(interval);
-          reader.readAsText(file); // Read file when progress is almost done
-          setProgress(100);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
+    reader.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percentage = Math.round((event.loaded * 100) / event.total);
+        setProgress(percentage);
+      }
+    };
+    
+    reader.onloadend = () => {
+        setProgress(100);
+    }
+
+    reader.readAsText(file);
   };
 
   const handleRemoveFile = () => {
