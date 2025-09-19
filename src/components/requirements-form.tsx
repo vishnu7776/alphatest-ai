@@ -1,16 +1,22 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { generateTestCasesAction } from '@/app/(main)/requirements/actions';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { AlertCircle, Bot, Clipboard, Loader2, FileText, Check } from 'lucide-react';
+import {
+  AlertCircle,
+  Loader2,
+  Mic,
+  UploadCloud,
+  File as FileIcon,
+  X,
+} from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Skeleton } from './ui/skeleton';
+import { Progress } from './ui/progress';
 
 const initialState = {
   summary: '',
@@ -22,37 +28,16 @@ function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" disabled={pending} className="w-full sm:w-auto">
+    <Button type="submit" disabled={pending} className="w-full">
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Generating...
+          Analyzing...
         </>
       ) : (
-        'Generate Test Cases'
+        'Analyze & Continue'
       )}
     </Button>
-  );
-}
-
-function ResultSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <Skeleton className="h-6 w-1/4" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
-      </div>
-       <div className="space-y-2">
-        <Skeleton className="h-6 w-1/4" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
-      </div>
-    </div>
   );
 }
 
@@ -61,6 +46,8 @@ export function RequirementsForm() {
     generateTestCasesAction,
     initialState
   );
+  const [file, setFile] = useState<File | null>(null);
+  const [progress, setProgress] = useState(0);
   const { pending } = useFormStatus();
   const { toast } = useToast();
 
@@ -73,102 +60,175 @@ export function RequirementsForm() {
       });
     }
   }, [state.error, toast]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      handleUpload(selectedFile);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const selectedFile = e.dataTransfer.files[0];
+      setFile(selectedFile);
+      handleUpload(selectedFile);
+    }
+  };
+
+  const handleUpload = (file: File) => {
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 10;
+      });
+    }, 200);
+  };
+
+  const handleRemoveFile = () => {
+    setFile(null);
+    setProgress(0);
+  };
   
-  const handleCopyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied to clipboard",
-      description: "Test cases have been copied successfully.",
-      action: <Check className="h-5 w-5 text-green-500" />
-    })
+  // NOTE: This is a placeholder for the results page.
+  if (state.summary || state.testCases) {
+    return (
+       <Card>
+        <CardContent className="p-6">
+            <h3 className="text-lg font-semibold mb-2">Generated Assets</h3>
+            <div className="space-y-4">
+              {state.summary && (
+                <div>
+                  <h4 className="font-semibold">Summary</h4>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{state.summary}</p>
+                </div>
+              )}
+               {state.testCases && (
+                <div>
+                  <h4 className="font-semibold">Test Cases</h4>
+                  <pre className="text-sm bg-muted/50 p-4 rounded-md whitespace-pre-wrap"><code>{state.testCases}</code></pre>
+                </div>
+              )}
+            </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
-    <form action={formAction} className="grid gap-6 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Requirements Document</CardTitle>
-          <CardDescription>
-            Paste the full text of your software requirements document below.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid w-full gap-2">
-            <Textarea
-              name="requirements"
-              placeholder="e.g., The system shall allow users to register with an email and password..."
-              rows={15}
-              required
-              minLength={50}
-            />
-            <div className="flex flex-col sm:flex-row sm:justify-end gap-2">
-              <SubmitButton />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Generated Assets</CardTitle>
-          <CardDescription>
-            AI-generated summary and test cases will appear here.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {pending ? (
-            <ResultSkeleton />
-          ) : state.summary || state.testCases ? (
-            <ScrollArea className="h-[380px] pr-4">
-              <div className="space-y-6">
-                {state.summary && (
-                  <div>
-                    <h3 className="flex items-center font-semibold mb-2">
-                      <Bot className="mr-2 h-5 w-5 text-primary" />
-                      Summary
-                    </h3>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {state.summary}
-                    </p>
-                  </div>
-                )}
-                {state.testCases && (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                       <h3 className="flex items-center font-semibold">
-                        <FileText className="mr-2 h-5 w-5 text-primary" />
-                        Test Cases
-                      </h3>
-                      <Button variant="ghost" size="icon" onClick={() => handleCopyToClipboard(state.testCases!)}>
-                        <Clipboard className="h-4 w-4" />
-                        <span className="sr-only">Copy Test Cases</span>
-                      </Button>
-                    </div>
-                    <div className="prose prose-sm dark:prose-invert max-w-none bg-muted/50 p-4 rounded-md whitespace-pre-wrap">
-                      <code>{state.testCases}</code>
-                    </div>
-                  </div>
-                )}
+    <form action={formAction} className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3">
+          <Card
+            className="h-full"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+          >
+            <CardContent className="p-6 h-full">
+              <div className="flex flex-col items-center justify-center h-full border-2 border-dashed border-muted-foreground/30 rounded-lg p-8 text-center">
+                <UploadCloud className="h-12 w-12 text-primary" />
+                <p className="mt-4 text-lg font-semibold">
+                  Drag 'n' drop requirement files here, or click to select
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  TXT, PDF, DOC, DOCX
+                </p>
+                <input
+                  type="file"
+                  className="hidden"
+                  id="file-upload"
+                  onChange={handleFileChange}
+                  accept=".txt,.pdf,.doc,.docx"
+                />
+                <Button
+                  type="button"
+                  variant="link"
+                  className="mt-2"
+                  onClick={() => document.getElementById('file-upload')?.click()}
+                >
+                  Browse files
+                </Button>
               </div>
-            </ScrollArea>
-          ) : (
-            <div className="flex items-center justify-center h-[380px] text-center">
-              <div className='flex flex-col items-center gap-2 text-muted-foreground'>
-                <Bot size={48} />
-                <p>Results will be shown here once generated.</p>
-              </div>
-            </div>
-          )}
+            </CardContent>
+          </Card>
+        </div>
 
-          {state.error && !pending && (
-            <Alert variant="destructive" className="mt-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Generation Failed</AlertTitle>
-              <AlertDescription>{state.error}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardContent className="p-6">
+              <label htmlFor="requirements-text" className="text-sm font-medium">
+                Type your requirements
+              </label>
+              <Textarea
+                id="requirements-text"
+                name="requirements"
+                placeholder="e.g., The system must allow users to log in with their email and password."
+                className="mt-2"
+                rows={5}
+              />
+            </CardContent>
+          </Card>
+          <Card className="flex flex-col items-center justify-center p-6">
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-20 w-20 rounded-full bg-primary/10 hover:bg-primary/20"
+            >
+              <Mic className="h-10 w-10 text-primary" />
+            </Button>
+            <p className="mt-4 text-sm font-medium">Use your voice</p>
+          </Card>
+        </div>
+      </div>
+
+      {file && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              <FileIcon className="h-8 w-8 text-muted-foreground" />
+              <div className="flex-1">
+                <div className="flex justify-between">
+                  <p className="text-sm font-medium">{file.name}</p>
+                  <p className="text-sm text-muted-foreground">{progress}%</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Progress value={progress} className="w-full h-2" />
+                </div>
+                <p className="text-xs text-muted-foreground">Ready</p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleRemoveFile}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {state.error && !pending && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Generation Failed</AlertTitle>
+          <AlertDescription>{state.error}</AlertDescription>
+        </Alert>
+      )}
+
+      <div className="flex justify-center">
+        <div className="w-full max-w-xs">
+          <SubmitButton />
+        </div>
+      </div>
     </form>
   );
 }

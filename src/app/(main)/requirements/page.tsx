@@ -5,10 +5,11 @@ export default function RequirementsPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
-          Generate Test Cases
+          Import Requirement
         </h1>
         <p className="text-muted-foreground">
-          Paste your software requirements to generate test cases using AI.
+          Upload your software requirements document, type them directly, or use
+          your voice. Our AI will analyze it for completeness and compliance.
         </p>
       </div>
       <RequirementsForm />
