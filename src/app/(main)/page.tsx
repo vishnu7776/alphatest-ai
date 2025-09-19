@@ -6,15 +6,143 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import {
   ArrowUpRight,
   Cpu,
   BookText,
   Activity,
   ClipboardCheck,
+  Folder,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { AppCharts } from '@/components/app-charts';
+
+const testRuns = [
+  {
+    appName: 'Clinical Trial App',
+    testCount: '2 tests',
+    tests: [
+      {
+        testId: 'TR-001',
+        userStoryId: 'US-401',
+        status: 'Running',
+        progress: 75,
+        jiraLink: '#',
+      },
+      {
+        testId: 'TR-006',
+        userStoryId: 'US-402',
+        status: 'Passed',
+        progress: 100,
+        jiraLink: '#',
+      },
+    ],
+  },
+  {
+    appName: 'Patient Portal',
+    testCount: '1 tests',
+    tests: [
+      {
+        testId: 'TR-002',
+        userStoryId: 'US-403',
+        status: 'Failed',
+        progress: 100,
+        jiraLink: '#',
+      },
+    ],
+  },
+  {
+    appName: 'EHR System',
+    testCount: '1 tests',
+    tests: [
+      {
+        testId: 'TR-003',
+        userStoryId: 'US-404',
+        status: 'Pending',
+        progress: 0,
+        jiraLink: '#',
+      },
+    ],
+  },
+  {
+    appName: 'Telemedicine Platform',
+    testCount: '1 tests',
+    tests: [
+      {
+        testId: 'TR-004',
+        userStoryId: 'US-405',
+        status: 'Passed',
+        progress: 100,
+        jiraLink: '#',
+      },
+    ],
+  },
+  {
+    appName: 'Pharmacy Management',
+    testCount: '2 tests',
+    tests: [
+       {
+        testId: 'TR-005',
+        userStoryId: 'US-406',
+        status: 'Running',
+        progress: 50,
+        jiraLink: '#',
+      },
+       {
+        testId: 'TR-007',
+        userStoryId: 'US-407',
+        status: 'Passed',
+        progress: 100,
+        jiraLink: '#',
+      },
+    ],
+  },
+];
+
+const getStatusBadge = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'passed':
+      return (
+        <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+          Passed
+        </Badge>
+      );
+    case 'failed':
+      return (
+        <Badge variant="destructive">
+          Failed
+        </Badge>
+      );
+    case 'running':
+       return (
+        <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
+          Running
+        </Badge>
+      );
+    case 'pending':
+        return <Badge variant="secondary">Pending</Badge>;
+    default:
+      return <Badge variant="outline">{status}</Badge>;
+  }
+};
+
 
 export default function DashboardPage() {
   return (
@@ -107,6 +235,64 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Test Runs</CardTitle>
+          <CardDescription>
+            An overview of your recent test case executions by application.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Accordion type="single" collapsible defaultValue="item-0">
+             {testRuns.map((run, index) => (
+              <AccordionItem value={`item-${index}`} key={index}>
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2">
+                    <Folder className="h-5 w-5 text-primary" />
+                    <span className="font-semibold">{run.appName}</span>
+                    <Badge variant="secondary">{run.testCount}</Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Test ID</TableHead>
+                        <TableHead>User Story ID</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Progress</TableHead>
+                        <TableHead>Jira Link</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {run.tests.map((test) => (
+                        <TableRow key={test.testId}>
+                          <TableCell>{test.testId}</TableCell>
+                          <TableCell>{test.userStoryId}</TableCell>
+                          <TableCell>{getStatusBadge(test.status)}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Progress value={test.progress} className="h-2 w-24" />
+                              <span>{test.progress}%</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <a href={test.jiraLink} className="flex items-center gap-1 text-primary hover:underline">
+                              <LinkIcon className="h-4 w-4" />
+                              Open Ticket
+                            </a>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </CardContent>
+      </Card>
     </div>
   );
 }
