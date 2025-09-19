@@ -1,7 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect } from 'react';
+import { useActionState, useEffect } from 'react';
+import { useFormStatus } from 'react-dom';
 import { generateTestCasesAction } from '@/app/(main)/requirements/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -57,7 +57,7 @@ function ResultSkeleton() {
 }
 
 export function RequirementsForm() {
-  const [state, formAction] = useFormState(
+  const [state, formAction] = useActionState(
     generateTestCasesAction,
     initialState
   );
