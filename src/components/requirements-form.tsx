@@ -19,6 +19,16 @@ import {
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from './ui/progress';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 const initialState = {
   summary: '',
@@ -26,11 +36,11 @@ const initialState = {
   error: '',
 };
 
-function SubmitButton() {
+function SubmitButton({ disabled }: { disabled: boolean }) {
   const { pending } = useFormStatus();
 
   return (
-    <Button type="submit" disabled={pending} className="w-full">
+    <Button type="submit" disabled={disabled || pending} className="w-full">
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -57,7 +67,10 @@ export function RequirementsForm() {
   const [transcript, setTranscript] = useState('');
   const recognitionRef = useRef<any>(null);
 
+  const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { pending } = useFormStatus();
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -67,8 +80,14 @@ export function RequirementsForm() {
         title: 'Error',
         description: state.error,
       });
+       setIsLoading(false);
+       setShowModal(false);
     }
-  }, [state.error, toast]);
+     if (state.summary || state.testCases) {
+      setIsLoading(false);
+      setShowModal(true);
+    }
+  }, [state, toast]);
 
   useEffect(() => {
     // Check for browser support for Web Speech API
@@ -168,6 +187,7 @@ export function RequirementsForm() {
     reader.onload = (e) => {
       const content = e.target?.result as string;
       setRequirementsText((prev) => (prev ? prev + '\n' : '') + content);
+      setProgress(100);
     };
 
     reader.onprogress = (event) => {
@@ -176,10 +196,6 @@ export function RequirementsForm() {
         setProgress(percentage);
       }
     };
-    
-    reader.onloadend = () => {
-        setProgress(100);
-    }
 
     reader.readAsText(file);
   };
@@ -187,9 +203,16 @@ export function RequirementsForm() {
   const handleRemoveFile = () => {
     setFile(null);
     setProgress(0);
+    // Optionally remove the file content from the textarea
+    // This part can be tricky if the content was edited.
+    // For simplicity, we can leave it or clear the whole textarea.
   };
   
-  // NOTE: This is a placeholder for the results page.
+  const handleFormAction = (formData: FormData) => {
+    setIsLoading(true);
+    formAction(formData);
+  };
+
   if (state.summary || state.testCases) {
     return (
        <Card>
@@ -215,7 +238,8 @@ export function RequirementsForm() {
   }
 
   return (
-    <form action={formAction} className="space-y-6">
+    <>
+    <form action={handleFormAction} className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3">
           <Card
@@ -340,9 +364,60 @@ export function RequirementsForm() {
 
       <div className="flex justify-center">
         <div className="w-full max-w-xs">
-          <SubmitButton />
+          <SubmitButton disabled={!requirementsText && !file} />
         </div>
       </div>
     </form>
+    
+    <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Finalize Details</DialogTitle>
+            <DialogDescription>
+              Provide the final details for your application before generating the test cases.
+            </DialogDescription>
+          </DialogHeader>
+          {isLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="ml-4">Analyzing your requirements...</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="appName" className="text-right">
+                  App Name
+                </Label>
+                <Input
+                  id="appName"
+                  defaultValue="My Healthcare App"
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="objective" className="text-right">
+                  Objective
+                </Label>
+                <Textarea
+                  id="objective"
+                  defaultValue="To streamline patient record management and appointment scheduling."
+                  className="col-span-3"
+                  rows={4}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+             <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
+             <Button onClick={() => {
+                // Here you would typically proceed to the next step
+                // For now, we'll just close the modal.
+                setShowModal(false); 
+                toast({ title: "Success", description: "Test cases are being generated."});
+              }}>Continue</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
