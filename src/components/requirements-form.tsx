@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useState, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 import { generateTestCasesAction } from '@/app/(main)/requirements/actions';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ import {
   UploadCloud,
   File as FileIcon,
   X,
+  Check,
+  Ban,
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from './ui/progress';
@@ -48,6 +50,13 @@ export function RequirementsForm() {
   );
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
+  const [requirementsText, setRequirementsText] = useState('');
+  
+  // Speech recognition state
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const recognitionRef = useRef<any>(null);
+
   const { pending } = useFormStatus();
   const { toast } = useToast();
 
@@ -60,6 +69,81 @@ export function RequirementsForm() {
       });
     }
   }, [state.error, toast]);
+
+  useEffect(() => {
+    // Check for browser support for Web Speech API
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+
+      recognitionRef.current.onresult = (event: any) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        setTranscript(finalTranscript + interimTranscript);
+      };
+
+      recognitionRef.current.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        toast({
+          variant: 'destructive',
+          title: 'Speech Error',
+          description: `An error occurred during speech recognition: ${event.error}`,
+        });
+        setIsListening(false);
+      };
+      
+      recognitionRef.current.onend = () => {
+        if (isListening) {
+           // If it ends unexpectedly, restart it.
+           recognitionRef.current.start();
+        }
+      };
+
+    } else {
+        console.warn("Speech recognition not supported in this browser.");
+    }
+    
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [toast, isListening]);
+  
+
+  const startListening = () => {
+    if (recognitionRef.current) {
+      setTranscript('');
+      setIsListening(true);
+      recognitionRef.current.start();
+    } else {
+       toast({
+        variant: 'destructive',
+        title: 'Not Supported',
+        description: 'Speech recognition is not supported in your browser.',
+      });
+    }
+  };
+
+  const stopListening = (append: boolean) => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      if (append && transcript) {
+        setRequirementsText(prev => (prev ? prev + ' ' : '') + transcript.trim());
+      }
+      setTranscript('');
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -81,10 +165,18 @@ export function RequirementsForm() {
 
   const handleUpload = (file: File) => {
     setProgress(0);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+       setRequirementsText(prev => (prev ? prev + '\n' : '') + content);
+    };
+
     const interval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
+        if (prev >= 90) {
           clearInterval(interval);
+          reader.readAsText(file); // Read file when progress is almost done
+          setProgress(100);
           return 100;
         }
         return prev + 10;
@@ -172,18 +264,40 @@ export function RequirementsForm() {
                 placeholder="e.g., The system must allow users to log in with their email and password."
                 className="mt-2"
                 rows={5}
+                value={requirementsText}
+                onChange={(e) => setRequirementsText(e.target.value)}
               />
             </CardContent>
           </Card>
           <Card className="flex flex-col items-center justify-center p-6">
-            <Button
-              type="button"
-              variant="ghost"
-              className="h-20 w-20 rounded-full bg-primary/10 hover:bg-primary/20"
-            >
-              <Mic className="h-10 w-10 text-primary" />
-            </Button>
-            <p className="mt-4 text-sm font-medium">Use your voice</p>
+            {isListening ? (
+              <div className="flex flex-col items-center gap-4">
+                 <p className="text-sm text-primary animate-pulse">Listening...</p>
+                 <p className="text-sm text-muted-foreground min-h-[40px] text-center">{transcript || '...'}</p>
+                 <div className="flex gap-4">
+                    <Button type="button" variant="outline" size="icon" onClick={() => stopListening(false)}>
+                      <Ban className="h-5 w-5" />
+                      <span className="sr-only">Cancel</span>
+                    </Button>
+                    <Button type="button" size="icon" onClick={() => stopListening(true)}>
+                      <Check className="h-5 w-5" />
+                       <span className="sr-only">Okay</span>
+                    </Button>
+                 </div>
+              </div>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-20 w-20 rounded-full bg-primary/10 hover:bg-primary/20"
+                  onClick={startListening}
+                >
+                  <Mic className="h-10 w-10 text-primary" />
+                </Button>
+                <p className="mt-4 text-sm font-medium">Use your voice</p>
+              </>
+            )}
           </Card>
         </div>
       </div>
@@ -201,7 +315,7 @@ export function RequirementsForm() {
                 <div className="flex items-center gap-2">
                   <Progress value={progress} className="w-full h-2" />
                 </div>
-                <p className="text-xs text-muted-foreground">Ready</p>
+                 { progress === 100 && <p className="text-xs text-green-500">File content added to requirements.</p>}
               </div>
               <Button
                 type="button"
