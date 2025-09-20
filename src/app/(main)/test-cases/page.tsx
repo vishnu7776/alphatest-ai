@@ -1,47 +1,228 @@
 
+'use client';
+
+import { useState } from 'react';
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import { Search, HeartPulse, FileText, CheckCircle2, XCircle, Loader2, Link as LinkIcon, Flag } from 'lucide-react';
+
+type TestCase = {
+  id: string;
+  title: string;
+  tags: string[];
+  status: 'Pass' | 'Fail' | 'Inprogress' | 'New';
+  scenario: string;
+  expectedResult: string;
+};
+
+type Requirement = {
+  id: string;
+  title: string;
+  description: string;
+  version: string;
+  type: string;
+  deliverables: string;
+  source: string;
+  testCasesCount: number;
+  testCases: TestCase[];
+};
+
+const testCaseData: Requirement[] = [
+  {
+    id: 'HC-REQ-001',
+    title: 'Patient Registration Form',
+    description: 'Allow new patients to register with personal and insurance details.',
+    version: 'BRD v1.2',
+    type: 'Functional',
+    deliverables: 'UI Calendar Integration, Scheduling API, Notification System, DB Schema',
+    source: 'BRD v1.0',
+    testCasesCount: 8,
+    testCases: [
+      { id: 'TC-101', title: 'Valid Registration', tags: ['HIPAA', 'GDPR'], status: 'Pass', scenario: 'Submit all valid fields (Name, DOB, Email, Phone, Insurance ID)', expectedResult: 'Registration is successful, confirmation message shown' },
+      { id: 'TC-102', title: 'Missing Email', tags: ['HIPAA'], status: 'Inprogress', scenario: 'Leave Email blank', expectedResult: 'Error message "Email is required" displayed' },
+      { id: 'TC-103', title: 'Future DOB', tags: ['HIPAA'], status: 'Inprogress', scenario: 'Enter a DOB in the future', expectedResult: 'Error message "Invalid date of birth" displayed' },
+      { id: 'TC-104', title: 'Duplicate Email', tags: ['HIPAA', 'GDPR'], status: 'Fail', scenario: 'Register using an existing email ID', expectedResult: 'Error message "Email already exists" displayed' },
+      { id: 'TC-105', title: 'Invalid Insurance ID', tags: ['HIPAA'], status: 'Fail', scenario: 'Enter an invalid or expired insurance ID', expectedResult: 'Error message "Invalid insurance" displayed' },
+      { id: 'TC-106', title: 'PHI Encryption Check', tags: ['HIPAA'], status: 'Inprogress', scenario: 'Inspect patient record in database', expectedResult: 'PHI fields (Name, DOB, Insurance ID) are encrypted at rest' },
+      { id: 'TC-107', title: 'Audit Trail Creation', tags: ['FDA 21', 'CFR Part 11'], status: 'Pass', scenario: 'Verify that an audit trail is created upon new patient registration with all required details.', expectedResult: 'An audit trail entry is successfully logged in the system with the correct user, action, and timestamp.' },
+      { id: 'TC-108', title: 'Consent Checkbox Mandatory', tags: ['GDPR'], status: 'Inprogress', scenario: 'Attempt to submit the registration form without checking the consent checkbox.', expectedResult: 'Form submission is blocked, and an error message "You must agree to the terms" is displayed.' },
+    ],
+  },
+  // Add another requirement if needed to test the accordion
+];
+
+const getStatusIcon = (status: TestCase['status']) => {
+    switch (status) {
+        case 'Pass':
+            return <LinkIcon className="h-4 w-4 text-green-500" />;
+        case 'Fail':
+            return <Flag className="h-4 w-4 text-red-500" />;
+        case 'Inprogress':
+            return <LinkIcon className="h-4 w-4 text-yellow-500" />;
+        case 'New':
+             return <LinkIcon className="h-4 w-4 text-blue-500" />;
+        default:
+            return null;
+    }
+}
+
+const getStatusBadge = (status: TestCase['status']) => {
+  switch (status) {
+    case 'Pass':
+      return <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-200">Pass</Badge>;
+    case 'Fail':
+      return <Badge className="bg-red-100 text-red-800 border-red-200 hover:bg-red-200">Fail</Badge>;
+    case 'Inprogress':
+      return <Badge className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200">Inprogress</Badge>;
+    default:
+       return <Badge variant="secondary">New</Badge>;
+  }
+};
+
+
+const RequirementTestCases = ({ requirement }: { requirement: Requirement }) => {
+    const [filter, setFilter] = useState('All');
+    
+    const filteredTestCases = requirement.testCases.filter(tc => 
+        filter === 'All' || tc.status === filter
+    );
+
+    return (
+        <div className="pl-4 pr-4 pb-4">
+             <Tabs defaultValue="All" onValueChange={setFilter} className="mb-4">
+                <TabsList>
+                    <TabsTrigger value="All">All</TabsTrigger>
+                    <TabsTrigger value="New">New</TabsTrigger>
+                    <TabsTrigger value="Inprogress">Inprogress</TabsTrigger>
+                    <TabsTrigger value="Pass">Pass</TabsTrigger>
+                    <TabsTrigger value="Fail">Fail</TabsTrigger>
+                </TabsList>
+            </Tabs>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredTestCases.map(tc => (
+                    <Card key={tc.id}>
+                        <CardContent className="p-4 space-y-3">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        {getStatusIcon(tc.status)}
+                                        <p className="text-xs text-muted-foreground font-semibold">{tc.id}</p>
+                                        {tc.tags.map(tag => (
+                                            <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
+                                        ))}
+                                    </div>
+                                    <p className="font-semibold text-foreground mt-1">{tc.title}</p>
+                                </div>
+                                {getStatusBadge(tc.status)}
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-xs border-t pt-3">
+                                <div>
+                                    <p className="text-muted-foreground font-semibold mb-1">Scenario</p>
+                                    <p className="text-foreground">{tc.scenario}</p>
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground font-semibold mb-1">Expected Result</p>
+                                    <p className="text-foreground">{tc.expectedResult}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 export default function TestCasesPage() {
-  const testCases = `
-      1. Verify user can log in with valid credentials.
-      2. Verify user cannot log in with invalid credentials.
-      3. Verify a new patient can be successfully added to the system.
-      4. Verify patient records can be searched and retrieved.
-      5. Verify a new appointment can be scheduled for a patient.
-      `;
-  const summary = "This is a mock summary of the requirements document. It seems to be about building a healthcare application with patient management features.";
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Generate Testcases</h1>
+                    <p className="text-muted-foreground">
+                        Please review the findings below and update your document accordingly.
+                    </p>
+                </div>
+                 <div className="flex items-center gap-4">
+                     <Tabs defaultValue="testcases">
+                        <TabsList>
+                            <TabsTrigger value="testcases">Testcases</TabsTrigger>
+                            <TabsTrigger value="swagger">Swagger</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                    <div className="relative w-full max-w-xs">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="Search" className="pl-9" />
+                    </div>
+                </div>
+            </div>
 
-  return (
-    <div className="flex flex-col gap-6">
-       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Generated Test Cases
-        </h1>
-        <p className="text-muted-foreground">
-          Below are the test cases and summary generated from your requirements.
-        </p>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{summary}</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Test Cases</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <pre className="text-sm bg-muted/50 p-4 rounded-md whitespace-pre-wrap"><code>{testCases}</code></pre>
-        </CardContent>
-      </Card>
-    </div>
-  );
+            <Accordion type="single" collapsible defaultValue='item-0' className="w-full space-y-4">
+                 {testCaseData.map((req, index) => (
+                    <Card key={req.id}>
+                        <AccordionItem value={`item-${index}`} className="border-b-0">
+                            <AccordionTrigger className="p-0 hover:no-underline">
+                                <CardContent className="p-4 grid grid-cols-12 items-center gap-4 w-full">
+                                    <div className="col-span-12 md:col-span-3 flex items-start gap-4">
+                                        <div className="p-2 rounded-full bg-primary/10">
+                                            <HeartPulse className="w-6 h-6 text-primary" />
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-foreground text-left">{req.id}: {req.title}</p>
+                                            <p className="text-xs text-muted-foreground text-left">{req.description}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <p className="text-xs font-semibold text-primary">{req.version}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="col-span-12 md:col-span-3">
+                                        <Badge variant="outline">{req.type}</Badge>
+                                    </div>
+                                    <div className="col-span-12 md:col-span-3 flex items-center gap-2">
+                                        <p className="text-sm text-muted-foreground">{req.deliverables}</p>
+                                    </div>
+                                    <div className="col-span-12 md:col-span-2 flex items-center gap-2">
+                                        <p className="text-sm text-muted-foreground">{req.source}</p>
+                                        <FileText className="h-4 w-4 text-muted-foreground"/>
+                                    </div>
+                                    <div className="col-span-12 md:col-span-1 flex items-center justify-end">
+                                        <p className="text-sm text-muted-foreground">{req.testCasesCount}</p>
+                                    </div>
+                                </CardContent>
+                            </AccordionTrigger>
+                            <AccordionContent>
+                               <RequirementTestCases requirement={req} />
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Card>
+                 ))}
+            </Accordion>
+            
+            <div className="fixed bottom-0 left-0 right-0 lg:left-[--sidebar-width] p-4 bg-background/80 backdrop-blur-sm border-t border-border z-10">
+                <div className="flex justify-end gap-4 max-w-6xl mx-auto">
+                    <Button>
+                       Update Document & Re-validate
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
 }
+
