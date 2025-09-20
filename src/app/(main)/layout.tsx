@@ -1,7 +1,8 @@
+
 "use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Avatar,
   AvatarFallback,
@@ -36,12 +37,15 @@ import {
   LogOut,
   LifeBuoy,
   ClipboardCheck,
+  ChevronLeft,
 } from 'lucide-react';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
+  const showBackButton = pathname !== '/';
 
   return (
     <SidebarProvider>
@@ -121,8 +125,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <SidebarInset>
         <header className="flex h-14 items-center gap-4 border-b bg-transparent px-4 lg:h-[60px] lg:px-6 sticky top-0 z-10">
           <SidebarTrigger className="lg:hidden" />
-          <div className="flex-1">
-            {/* Can add breadcrumbs or title here */}
+          <div className="flex-1 flex items-center gap-2">
+            {showBackButton && (
+                <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                    <ChevronLeft className="h-5 w-5" />
+                    <span className="sr-only">Back</span>
+                </Button>
+            )}
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
