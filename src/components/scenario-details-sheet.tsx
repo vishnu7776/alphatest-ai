@@ -13,6 +13,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, FileText } from "lucide-react";
 import { Separator } from "./ui/separator";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 export type SubTask = {
     category: string;
@@ -69,7 +71,9 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                                <Badge variant="outline">{requirement.type}</Badge>
                             </div>
                             <div className="flex items-center justify-between">
-                                <h2 className="text-2xl font-bold text-foreground">{requirement.title}</h2>
+                                <SheetTitle asChild>
+                                  <h2 className="text-2xl font-bold text-foreground">{requirement.title}</h2>
+                                </SheetTitle>
                                 <Button variant="ghost" size="icon">
                                     <Pencil className="h-4 w-4" />
                                 </Button>
@@ -219,9 +223,14 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
             
             <Dialog open={!!previewImage} onOpenChange={(isOpen) => !isOpen && setPreviewImage(null)}>
                 <DialogContent className="max-w-3xl">
+                     <DialogTitle>
+                        <VisuallyHidden>Image Preview</VisuallyHidden>
+                    </DialogTitle>
                     {previewImage && <Image src={previewImage} alt="Preview" width={1200} height={800} className="object-contain rounded-md" />}
                 </DialogContent>
             </Dialog>
         </>
     )
 }
+
+    
