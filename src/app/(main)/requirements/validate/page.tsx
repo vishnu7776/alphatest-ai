@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileWarning, AlertTriangle, Info, Loader2, Trash2 } from 'lucide-react';
 
-const suggestionsData = [
+const initialSuggestions = [
     {
         "id": "suggestion-1",
         "title": "Missing Country / Regional Information",
@@ -35,6 +35,8 @@ const suggestionsData = [
     }
 ];
 
+type Suggestion = typeof initialSuggestions[0];
+
 const getIconForPriority = (priority: string) => {
     switch (priority) {
         case 'high':
@@ -44,13 +46,14 @@ const getIconForPriority = (priority: string) => {
         case 'low':
             return <Info className="h-8 w-8 text-blue-500 mt-1 flex-shrink-0" />;
         default:
-            return <Info className="h-8 w-8 text-blue-500 mt-1 flex-shrink-0" />;
+            return <Info className="h-8 w-8 text-blue-500 mt-1 flex-shrink.0" />;
     }
 };
 
 
 export default function RequirementValidationPage() {
     const router = useRouter();
+    const [suggestions, setSuggestions] = useState<Suggestion[]>(initialSuggestions);
     const [addedSuggestions, setAddedSuggestions] = useState<string[]>([]);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -66,12 +69,15 @@ export default function RequirementValidationPage() {
     const handleUpdateAndRevalidate = () => {
         setIsUpdating(true);
         setTimeout(() => {
-            router.push('/requirements/list');
+            // Remove the suggestions that were "Added" from the main list
+            setSuggestions(prev => prev.filter(s => !addedSuggestions.includes(s.id)));
+            // Clear the "added" list
+            setAddedSuggestions([]);
             setIsUpdating(false);
         }, 2000);
     };
 
-    const handleProceedWithWarning = () => {
+    const handleProceed = () => {
         setIsGenerating(true);
         setTimeout(() => {
             router.push('/requirements/list');
@@ -87,36 +93,45 @@ export default function RequirementValidationPage() {
             Our AI has analyzed your document and found some areas for improvement. Review the suggestions below.
             </p>
         </div>
-
-        <div className="space-y-4">
-            {suggestionsData.map((suggestion) => (
-            <Card key={suggestion.id}>
-                <CardContent className="p-4 flex items-start gap-4">
-                {getIconForPriority(suggestion.priority)}
-                <div className="flex-grow">
-                    <p className="font-semibold text-foreground">{suggestion.title}</p>
-                    <p className="text-sm text-muted-foreground">{suggestion.message}</p>
-                </div>
-                {addedSuggestions.includes(suggestion.id) ? (
-                    <div className='flex items-center gap-2'>
-                        <span className="text-sm font-medium text-green-500">Added</span>
-                        <Button variant="ghost" size="icon" onClick={() => handleRemoveSuggestion(suggestion.id)}>
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+        
+        {suggestions.length > 0 ? (
+            <div className="space-y-4">
+                {suggestions.map((suggestion) => (
+                <Card key={suggestion.id}>
+                    <CardContent className="p-4 flex items-start gap-4">
+                    {getIconForPriority(suggestion.priority)}
+                    <div className="flex-grow">
+                        <p className="font-semibold text-foreground">{suggestion.title}</p>
+                        <p className="text-sm text-muted-foreground">{suggestion.message}</p>
                     </div>
-                ) : (
-                    <Button variant="outline" size="sm" onClick={() => handleAddSuggestion(suggestion.id)}>
-                        Add
-                    </Button>
-                )}
+                    {addedSuggestions.includes(suggestion.id) ? (
+                        <div className='flex items-center gap-2'>
+                            <span className="text-sm font-medium text-green-500">Added</span>
+                            <Button variant="ghost" size="icon" onClick={() => handleRemoveSuggestion(suggestion.id)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ) : (
+                        <Button variant="outline" size="sm" onClick={() => handleAddSuggestion(suggestion.id)}>
+                            Add
+                        </Button>
+                    )}
+                    </CardContent>
+                </Card>
+                ))}
+          </div>
+        ) : (
+            <Card>
+                <CardContent className="p-6 text-center">
+                    <p className="text-muted-foreground">No pending suggestions. You're ready to proceed!</p>
                 </CardContent>
             </Card>
-            ))}
-      </div>
+        )}
+
 
         <div className="fixed bottom-0 left-0 right-0 lg:left-[--sidebar-width] p-4 bg-background/80 backdrop-blur-sm border-t border-border z-10">
             <div className="flex justify-end gap-4 max-w-6xl mx-auto">
-                <Button variant="outline" onClick={handleUpdateAndRevalidate} disabled={isUpdating}>
+                <Button variant="outline" onClick={handleUpdateAndRevalidate} disabled={isUpdating || addedSuggestions.length === 0}>
                     {isUpdating ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -126,14 +141,14 @@ export default function RequirementValidationPage() {
                         'Update Document & Re-validate'
                     )}
                 </Button>
-                <Button onClick={handleProceedWithWarning} disabled={isGenerating}>
+                <Button onClick={handleProceed} disabled={isGenerating}>
                      {isGenerating ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Proceeding...
                         </>
                     ) : (
-                        'Proceed with warning'
+                        suggestions.length > 0 ? 'Proceed with warning' : 'Proceed'
                     )}
                 </Button>
             </div>
