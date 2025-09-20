@@ -251,8 +251,10 @@ function RequirementsFormContent() {
     
     reader.onload = (e) => {
       const content = e.target?.result as string;
-      setRequirementsText(content); // Replace instead of append
+      // The content of the file is available in the `content` variable
+      // We are not setting it to the requirementsText state anymore.
       setProgress(100);
+      setRequirementsText(content);
     };
 
     reader.onerror = () => {
