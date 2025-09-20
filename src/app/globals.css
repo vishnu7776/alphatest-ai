@@ -44,11 +44,11 @@ body {
   }
 
   .dark {
-    --background: 0 0% 0%;
+    --background: 0 0% 4%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 11%;
+    --card: 0 0% 8% / 0.6;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 11%;
+    --popover: 0 0% 8%;
     --popover-foreground: 0 0% 98%;
     --primary: 50 96% 60%;
     --primary-foreground: 0 0% 10%;
@@ -91,12 +91,16 @@ body {
 
   .dark body {
     background-color: #000000;
-    background-image: none;
+    background-image: radial-gradient(circle at 25% 30%, hsl(var(--primary) / 0.1), transparent 35%),
+    radial-gradient(circle at 75% 70%, hsl(var(--chart-2) / 0.08), transparent 35%);
   }
 }
 
 @layer components {
   .card {
-    @apply backdrop-blur-md border-white/20;
+    @apply backdrop-blur-md border-white/10 transition-all duration-300;
+  }
+  .card:hover {
+      @apply shadow-lg shadow-primary/10 border-primary/20;
   }
 }
