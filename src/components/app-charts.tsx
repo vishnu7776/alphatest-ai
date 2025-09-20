@@ -28,15 +28,15 @@ const barChartData = [
 const barChartConfig = {
   passed: {
     label: 'Passed',
-    color: 'hsl(var(--chart-2))',
+    color: '#8AEA70',
   },
   failed: {
     label: 'Failed',
-    color: 'hsl(var(--destructive))',
+    color: '#B42C48',
   },
   skipped: {
     label: 'Skipped',
-    color: 'hsl(var(--muted-foreground))',
+    color: '#F97315',
   },
 } satisfies ChartConfig;
 
