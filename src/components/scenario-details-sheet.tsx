@@ -15,12 +15,14 @@ import {
   DialogContent,
   DialogTitle,
   DialogHeader,
+  DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FileText, UploadCloud, Trash2 } from "lucide-react";
+import { FileText, UploadCloud, Trash2, Pencil, Loader2 } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Input } from "./ui/input";
@@ -83,6 +85,10 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
     const [editPrompt, setEditPrompt] = useState('');
     const [currentRequirement, setCurrentRequirement] = useState(requirement);
     
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+
+
     useEffect(() => {
         setCurrentRequirement(requirement);
     }, [requirement]);
@@ -98,13 +104,18 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
     }
     
     const handleUpdateSubtasks = () => {
+        setIsUpdating(true);
         console.log('Updating with prompt:', editPrompt);
         // Simulate backend update by toggling subtasks
-        setCurrentRequirement(prev => ({
-            ...prev,
-            subTasks: prev.subTasks.length === requirement.subTasks.length ? alternativeSubTasks : requirement.subTasks
-        }));
-        setEditPrompt('');
+        setTimeout(() => {
+            setCurrentRequirement(prev => ({
+                ...prev,
+                subTasks: prev.subTasks.length === requirement.subTasks.length ? alternativeSubTasks : requirement.subTasks
+            }));
+            setIsUpdating(false);
+            setIsEditDialogOpen(false);
+            setEditPrompt('');
+        }, 2000);
     };
 
     const groupedTasks = currentRequirement.subTasks.reduce((acc, task) => {
@@ -123,9 +134,14 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                            <SheetDescription>{currentRequirement.description}</SheetDescription>
                          </VisuallyHidden>
                         <div className="space-y-2 text-left pt-4">
-                            <div className="flex items-center gap-2">
-                               <p className="font-semibold text-primary text-sm">{currentRequirement.id}</p>
-                               <Badge variant="outline">{currentRequirement.type}</Badge>
+                            <div className="flex items-center justify-between">
+                               <div className="flex items-center gap-2">
+                                    <p className="font-semibold text-primary text-sm">{currentRequirement.id}</p>
+                                    <Badge variant="outline">{currentRequirement.type}</Badge>
+                               </div>
+                               <Button variant="ghost" size="icon" onClick={() => setIsEditDialogOpen(true)}>
+                                   <Pencil className="w-4 h-4" />
+                               </Button>
                             </div>
                             <div className="flex items-center justify-between">
                                 <h2 className="text-2xl font-bold text-foreground">{currentRequirement.title}</h2>
@@ -327,25 +343,37 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                                         <p>No sub-tasks for this requirement.</p>
                                     </div>
                                 )}
-
-                                <Separator />
-                                
-                                <div className="space-y-4">
-                                     <h4 className="font-semibold text-foreground">Update with AI</h4>
-                                      <Textarea 
-                                        placeholder="e.g., Add two-factor authentication and enhance mobile responsiveness for the form."
-                                        value={editPrompt}
-                                        onChange={(e) => setEditPrompt(e.target.value)}
-                                        rows={4}
-                                    />
-                                    <Button onClick={handleUpdateSubtasks} className="w-full">Update Sub-Tasks</Button>
-                                </div>
-
                             </div>
                         )}
                     </div>
                 </SheetContent>
             </Sheet>
+
+             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Requirement</DialogTitle>
+                        <DialogDescription>
+                           Use a prompt to update the sub-tasks for this requirement.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Textarea 
+                            placeholder="e.g., Add two-factor authentication and enhance mobile responsiveness for the form."
+                            value={editPrompt}
+                            onChange={(e) => setEditPrompt(e.target.value)}
+                            rows={4}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isUpdating}>Cancel</Button>
+                        <Button onClick={handleUpdateSubtasks} disabled={isUpdating}>
+                            {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Save
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={!!previewImage} onOpenChange={(isOpen) => !isOpen && setPreviewImage(null)}>
                 <DialogContent className="max-w-3xl">
@@ -360,5 +388,3 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
         </>
     )
 }
-
-    
