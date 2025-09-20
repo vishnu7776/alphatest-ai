@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -41,18 +42,22 @@ const barChartConfig = {
 } satisfies ChartConfig;
 
 const lineChartData = [
-  { month: 'January', defects: 186 },
-  { month: 'February', defects: 205 },
-  { month: 'March', defects: 237 },
-  { month: 'April', defects: 173 },
-  { month: 'May', defects: 209 },
-  { month: 'June', defects: 214 },
+  { month: 'January', open: 186, closed: 80 },
+  { month: 'February', open: 205, closed: 120 },
+  { month: 'March', open: 237, closed: 150 },
+  { month: 'April', open: 173, closed: 190 },
+  { month: 'May', open: 209, closed: 130 },
+  { month: 'June', open: 214, closed: 140 },
 ];
 
 const lineChartConfig = {
-  defects: {
-    label: 'Defects',
+  open: {
+    label: 'Open',
     color: 'hsl(var(--chart-1))',
+  },
+  closed: {
+    label: 'Closed',
+    color: 'hsl(var(--chart-2))',
   },
 } satisfies ChartConfig;
 
@@ -99,13 +104,30 @@ export function AppCharts({ chartType }: { chartType: 'bar' | 'line' }) {
             tickFormatter={(value) => value.slice(0, 3)}
           />
            <YAxis />
-          <Tooltip cursor={false} content={<ChartTooltipContent indicator="line" hideLabel />} />
+          <Tooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
           <Line
-            dataKey="defects"
+            dataKey="open"
             type="natural"
-            stroke="var(--color-defects)"
+            stroke="var(--color-open)"
             strokeWidth={2}
-            dot={false}
+            dot={{
+              fill: "var(--color-open)",
+            }}
+            activeDot={{
+              r: 6,
+            }}
+          />
+           <Line
+            dataKey="closed"
+            type="natural"
+            stroke="var(--color-closed)"
+            strokeWidth={2}
+            dot={{
+              fill: "var(--color-closed)",
+            }}
+             activeDot={{
+              r: 6,
+            }}
           />
         </LineChart>
       </ChartContainer>
@@ -114,3 +136,4 @@ export function AppCharts({ chartType }: { chartType: 'bar' | 'line' }) {
 
   return null;
 }
+
