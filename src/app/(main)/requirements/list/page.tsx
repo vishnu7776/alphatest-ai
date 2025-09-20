@@ -18,8 +18,10 @@ import {
 } from '@/components/ui/tabs';
 import { Search, HeartPulse, FileText, Loader2, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ScenarioDetailsSheet, Requirement } from '@/components/scenario-details-sheet';
 
-const requirementsData = [
+
+const requirementsData: Requirement[] = [
   {
     id: 'HC-REQ-001',
     title: 'Patient Registration Form',
@@ -29,6 +31,21 @@ const requirementsData = [
     deliverables: 'UI Form Design, Registration API, Data Validation Rules, DB Schema',
     source: 'BRD v1.2',
     testCases: 12,
+    projectName: 'Healthy me',
+    status: 'New',
+    subTasks: [
+        { category: 'Form Design & UI', task: 'Design registration form layout (personal info, contact info, insurance info sections)', completed: false },
+        { category: 'Form Design & UI', task: 'Define required and optional fields with labels and placeholders', completed: false },
+        { category: 'Form Design & UI', task: 'Implement client-side field validations (email, phone, DOB, required fields)', completed: false },
+        { category: 'Backend Development', task: 'Design database schema for patient and insurance data', completed: false },
+        { category: 'Backend Development', task: 'Implement API endpoint to create patient records', completed: false },
+        { category: 'Security & Compliance', task: 'Enforce HTTPS for secure data transfer', completed: false },
+        { category: 'Security & Compliance', task: 'Implement input sanitization and prevent injection attacks', completed: false },
+        { category: 'Security & Compliance', task: 'Ensure compliance with HIPAA/local healthcare data privacy rules', completed: false },
+        { category: 'Insurance Integration', task: 'Add insurance provider, policy number, coverage fields', completed: false },
+        { category: 'Insurance Integration', task: 'Validate insurance data format and completeness', completed: false },
+        { category: 'Insurance Integration', task: '(Optional) Integrate with external insurance verification APIs', completed: false },
+    ]
   },
   {
     id: 'HC-REQ-002',
@@ -39,6 +56,9 @@ const requirementsData = [
     deliverables: 'UI Calendar Integration, Scheduling API, Notification System, DB Schema',
     source: 'BRD v1.0',
     testCases: 12,
+    projectName: 'Healthy me',
+    status: 'In Progress',
+    subTasks: []
   },
   {
     id: 'HC-REQ-003',
@@ -49,6 +69,9 @@ const requirementsData = [
     deliverables: 'UI Dashboard Design, Data Fetching API, Security Measures, DB Updates',
     source: 'BRD v1.3',
     testCases: 12,
+    projectName: 'Healthy me',
+    status: 'New',
+    subTasks: []
   },
   {
     id: 'HC-REQ-004',
@@ -59,6 +82,9 @@ const requirementsData = [
     deliverables: 'UI Video Call Integration, Telehealth API, User Authentication, DB Mana...',
     source: 'BRD v1.4',
     testCases: 12,
+    projectName: 'Healthy me',
+    status: 'Tested',
+    subTasks: []
   },
   {
     id: 'HC-REQ-005',
@@ -69,6 +95,9 @@ const requirementsData = [
     deliverables: 'UI Reminder System, Medication Database, Notification API, Data Priva...',
     source: 'BRD v1.0',
     testCases: 12,
+    projectName: 'Healthy me',
+    status: 'New',
+    subTasks: []
   },
    {
     id: 'HC-REQ-006',
@@ -79,10 +108,13 @@ const requirementsData = [
     deliverables: 'UI Records Viewer, Access Control Implementation, API for Sharing Dat...',
     source: 'BRD v1.2',
     testCases: 12,
+    projectName: 'Healthy me',
+    status: 'In Progress',
+    subTasks: []
   },
 ];
 
-const RequirementListContent = ({ requirements }: { requirements: typeof requirementsData }) => {
+const RequirementListContent = ({ requirements, onRequirementSelect }: { requirements: Requirement[], onRequirementSelect: (req: Requirement) => void }) => {
     const { toast } = useToast();
 
     return (
@@ -117,9 +149,9 @@ const RequirementListContent = ({ requirements }: { requirements: typeof require
                     <p className="text-sm text-muted-foreground">{req.source}</p>
                     <FileText className="h-4 w-4 text-muted-foreground"/>
                   </div>
-                  <div className="col-span-12 md:col-span-2 flex items-center gap-2">
+                  <div className="col-span-12 md:col-span-2 flex items-center justify-between">
                     <p className="text-sm text-muted-foreground">{req.testCases}</p>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" onClick={() => onRequirementSelect(req)}>
                       <Eye className="h-4 w-4"/>
                     </Button>
                   </div>
@@ -134,6 +166,7 @@ const RequirementListContent = ({ requirements }: { requirements: typeof require
 export default function RequirementListPage() {
   const router = useRouter();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedRequirement, setSelectedRequirement] = useState<Requirement | null>(null);
 
   const handleGenerate = () => {
     setIsGenerating(true);
@@ -142,6 +175,14 @@ export default function RequirementListPage() {
         setIsGenerating(false);
     }, 2000);
   }
+
+  const handleRequirementSelect = (req: Requirement) => {
+    setSelectedRequirement(req);
+  };
+
+  const handleCloseSheet = () => {
+    setSelectedRequirement(null);
+  };
 
   return (
     <div className="pb-24 space-y-6">
@@ -165,13 +206,13 @@ export default function RequirementListPage() {
           <TabsTrigger value="tested">Tested</TabsTrigger>
         </TabsList>
         <TabsContent value="new" className="mt-4">
-          <RequirementListContent requirements={requirementsData} />
+          <RequirementListContent requirements={requirementsData.filter(r => r.status === 'New')} onRequirementSelect={handleRequirementSelect} />
         </TabsContent>
          <TabsContent value="inprogress" className="mt-4">
-          <RequirementListContent requirements={requirementsData} />
+          <RequirementListContent requirements={requirementsData.filter(r => r.status === 'In Progress')} onRequirementSelect={handleRequirementSelect} />
         </TabsContent>
          <TabsContent value="tested" className="mt-4">
-          <RequirementListContent requirements={requirementsData} />
+          <RequirementListContent requirements={requirementsData.filter(r => r.status === 'Tested')} onRequirementSelect={handleRequirementSelect} />
         </TabsContent>
       </Tabs>
 
@@ -192,6 +233,14 @@ export default function RequirementListPage() {
                 </Button>
             </div>
         </div>
+        
+        {selectedRequirement && (
+            <ScenarioDetailsSheet 
+                isOpen={!!selectedRequirement} 
+                onClose={handleCloseSheet} 
+                requirement={selectedRequirement} 
+            />
+        )}
     </div>
   );
 }
