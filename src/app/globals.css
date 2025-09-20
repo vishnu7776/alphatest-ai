@@ -27,11 +27,11 @@ body {
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 260 85% 65%;
-    --chart-1: 260 85% 65%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 356 80% 65%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-1: 91 76% 70%;
+    --chart-2: 342 61% 44%;
+    --chart-3: 20 95% 57%;
+    --chart-4: 345 61% 45%;
+    --chart-5: 91 76% 70%;
     --radius: 0.75rem;
     --sidebar-background: 260 100% 97% / 0.5;
     --sidebar-foreground: 220 9% 25%;
@@ -98,9 +98,9 @@ body {
 
 @layer components {
   .card {
-    @apply shadow-lg shadow-primary/5 transition-all duration-300;
+    @apply shadow-xl shadow-primary/10 transition-all duration-300;
   }
   .card:hover {
-      @apply shadow-xl shadow-primary/10;
+      @apply shadow-2xl shadow-primary/20;
   }
 }
