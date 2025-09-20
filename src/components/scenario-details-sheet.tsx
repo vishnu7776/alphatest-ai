@@ -37,7 +37,7 @@ export type SubTask = {
 export type Requirement = {
     id: string;
     title: string;
-    description: string;
+    description:string;
     version: string;
     type: string;
     deliverables: string;
@@ -94,6 +94,7 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
     const [activeTab, setActiveTab] = useState<ActiveTab>('sub-tasks');
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [attachments, setAttachments] = useState<File[]>([]);
+    const [savedAttachments, setSavedAttachments] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [editPrompt, setEditPrompt] = useState('');
     const [currentRequirement, setCurrentRequirement] = useState(requirement);
@@ -109,6 +110,11 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
             subTasks: requirement.id === 'HC-REQ-001' && requirement.subTasks.length === 0 ? originalSubTasks : requirement.subTasks
         };
         setCurrentRequirement(initialRequirement);
+        // Reset state on new requirement
+        setIsEditing(false);
+        setAttachments([]);
+        setSavedAttachments([]);
+        setEditPrompt('');
     }, [requirement]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,18 +127,27 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
         setAttachments(prev => prev.filter((_, i) => i !== index));
     }
     
-    const handleUpdateSubtasks = () => {
+    const handleSaveChanges = () => {
         setIsUpdating(true);
         console.log('Updating with prompt:', editPrompt);
-        // Simulate backend update by toggling subtasks
+        // Simulate backend update
         setTimeout(() => {
-            setCurrentRequirement(prev => {
-                const isOriginal = prev.subTasks[0]?.category === 'Form Design & UI';
-                return {
-                    ...prev,
-                    subTasks: isOriginal ? alternativeSubTasks : originalSubTasks
-                }
-            });
+            // Save subtasks
+            if (activeTab === 'sub-tasks' && editPrompt) {
+                 setCurrentRequirement(prev => {
+                    const isOriginal = prev.subTasks[0]?.category === 'Form Design & UI';
+                    return {
+                        ...prev,
+                        subTasks: isOriginal ? alternativeSubTasks : originalSubTasks
+                    }
+                });
+            }
+            // Save attachments
+            if (activeTab === 'attachments') {
+                setSavedAttachments(prev => [...prev, ...attachments]);
+                setAttachments([]);
+            }
+
             setIsUpdating(false);
             setIsEditing(false);
             setEditPrompt('');
@@ -142,6 +157,8 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
     const handleCancelEdit = () => {
         setIsEditing(false);
         setEditPrompt('');
+        // Clear any staged attachments that were not saved
+        setAttachments([]);
     }
 
     const groupedTasks = currentRequirement.subTasks.reduce((acc, task) => {
@@ -149,10 +166,16 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
         return acc;
     }, {} as Record<string, SubTask[]>);
 
+    const displayedAttachments = isEditing ? attachments : savedAttachments;
 
     return (
         <>
-            <Sheet open={isOpen} onOpenChange={onClose}>
+            <Sheet open={isOpen} onOpenChange={(open) => {
+                if (!open) {
+                    handleCancelEdit(); // Reset state when sheet is closed
+                }
+                onClose();
+            }}>
                 <SheetContent className="w-full sm:max-w-[600px] p-0 flex flex-col">
                     <SheetHeader className="p-6 pb-2">
                          <VisuallyHidden>
@@ -242,34 +265,38 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                         
                         {activeTab === 'attachments' && (
                            <div className="space-y-4">
-                                <Card 
-                                    className="border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors cursor-pointer"
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    <CardContent className="p-6">
-                                        <div className="flex flex-col items-center justify-center text-center">
-                                            <UploadCloud className="h-8 w-8 text-primary" />
-                                            <p className="mt-2 text-sm font-semibold">
-                                                Click to upload or drag and drop
-                                            </p>
-                                            <p className="mt-1 text-xs text-muted-foreground">
-                                                PDF, DOC, PNG, JPG
-                                            </p>
-                                        </div>
-                                    </CardContent>
-                                    <Input 
-                                        ref={fileInputRef}
-                                        type="file" 
-                                        className="hidden" 
-                                        multiple 
-                                        onChange={handleFileChange}
-                                    />
-                                </Card>
+                                {isEditing && (
+                                    <Card 
+                                        className="border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors cursor-pointer"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        <CardContent className="p-6">
+                                            <div className="flex flex-col items-center justify-center text-center">
+                                                <UploadCloud className="h-8 w-8 text-primary" />
+                                                <p className="mt-2 text-sm font-semibold">
+                                                    Click to upload or drag and drop
+                                                </p>
+                                                <p className="mt-1 text-xs text-muted-foreground">
+                                                    PDF, DOC, PNG, JPG
+                                                </p>
+                                            </div>
+                                        </CardContent>
+                                        <Input 
+                                            ref={fileInputRef}
+                                            type="file" 
+                                            className="hidden" 
+                                            multiple 
+                                            onChange={handleFileChange}
+                                        />
+                                    </Card>
+                                )}
 
-                                {attachments.length > 0 && (
+                                {(savedAttachments.length > 0 || attachments.length > 0) && (
                                     <div className="space-y-2">
-                                        <h4 className="font-semibold text-foreground">Uploaded Files</h4>
-                                        {attachments.map((file, index) => (
+                                        <h4 className="font-semibold text-foreground">
+                                            {isEditing ? 'Staged Files' : 'Uploaded Files'}
+                                        </h4>
+                                        { (isEditing ? attachments : savedAttachments).map((file, index) => (
                                             <Card key={index}>
                                                 <CardContent className="p-3 flex items-center justify-between">
                                                     <div className="flex items-center gap-3">
@@ -290,9 +317,11 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                                                             <p className="text-xs text-muted-foreground">{formatBytes(file.size)}</p>
                                                         </div>
                                                     </div>
-                                                    <Button variant="ghost" size="icon" onClick={() => handleRemoveAttachment(index)}>
-                                                        <Trash2 className="w-4 h-4 text-destructive" />
-                                                    </Button>
+                                                    {isEditing && (
+                                                        <Button variant="ghost" size="icon" onClick={() => handleRemoveAttachment(index)}>
+                                                            <Trash2 className="w-4 h-4 text-destructive" />
+                                                        </Button>
+                                                    )}
                                                 </CardContent>
                                             </Card>
                                         ))}
@@ -387,7 +416,7 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                     {isEditing && (
                         <SheetFooter className="fixed bottom-0 right-0 w-full sm:max-w-[600px] bg-background border-t p-4">
                             <Button variant="outline" onClick={handleCancelEdit} disabled={isUpdating}>Cancel</Button>
-                            <Button onClick={handleUpdateSubtasks} disabled={isUpdating}>
+                            <Button onClick={handleSaveChanges} disabled={isUpdating}>
                                 {isUpdating ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -415,5 +444,3 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
         </>
     )
 }
-
-    
