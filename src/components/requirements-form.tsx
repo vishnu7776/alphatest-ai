@@ -116,6 +116,7 @@ function RequirementsFormContent() {
     initialState
   );
   const [file, setFile] = useState<File | null>(null);
+  const [fileContent, setFileContent] = useState('');
   const [progress, setProgress] = useState(0);
   const [requirementsText, setRequirementsText] = useState('');
   
@@ -251,10 +252,8 @@ function RequirementsFormContent() {
     
     reader.onload = (e) => {
       const content = e.target?.result as string;
-      // The content of the file is available in the `content` variable
-      // We are not setting it to the requirementsText state anymore.
+      setFileContent(content);
       setProgress(100);
-      setRequirementsText(content);
     };
 
     reader.onerror = () => {
@@ -272,8 +271,8 @@ function RequirementsFormContent() {
 
   const handleRemoveFile = () => {
     setFile(null);
+    setFileContent('');
     setProgress(0);
-    setRequirementsText('');
     if(fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -281,6 +280,9 @@ function RequirementsFormContent() {
   
   const handleFormAction = (formData: FormData) => {
     setIsLoading(true);
+    // If a file was uploaded, we use its content. Otherwise, we use the text area.
+    const requirements = fileContent || requirementsText;
+    formData.set('requirements', requirements);
     formAction(formData);
   };
 
@@ -448,7 +450,7 @@ function RequirementsFormContent() {
                 <div className="flex items-center gap-2">
                   <Progress value={progress} className="w-full h-2" />
                 </div>
-                 { progress === 100 && <p className="text-xs text-green-500">File content loaded into requirements text area.</p>}
+                 { progress === 100 && <p className="text-xs text-green-500">File ready for analysis.</p>}
               </div>
               <Button
                 type="button"
@@ -473,7 +475,7 @@ function RequirementsFormContent() {
 
       <div className="flex justify-center">
         <div className="w-full max-w-xs">
-          <SubmitButton disabled={!requirementsText} />
+          <SubmitButton disabled={!requirementsText && !fileContent} />
         </div>
       </div>
     </form>
