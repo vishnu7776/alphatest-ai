@@ -26,20 +26,20 @@ body {
     --destructive-foreground: 0 0% 98%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 44 98% 61%;
+    --ring: 260 85% 65%;
     --chart-1: 260 85% 65%;
     --chart-2: 142 71% 45%;
     --chart-3: 356 80% 65%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
     --radius: 0.75rem;
-    --sidebar-background: 220 20% 100% / 0.5;
+    --sidebar-background: 260 100% 97% / 0.5;
     --sidebar-foreground: 220 9% 25%;
     --sidebar-primary: 260 85% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 260 85% 96%;
     --sidebar-accent-foreground: 260 85% 65%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-border: 260 85% 92%;
     --sidebar-ring: 260 85% 65%;
   }
 
