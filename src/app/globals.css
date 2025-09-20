@@ -98,9 +98,9 @@ body {
 
 @layer components {
   .card {
-    @apply backdrop-blur-md border-white/10 transition-all duration-300;
+    @apply shadow-lg shadow-primary/5 transition-all duration-300;
   }
   .card:hover {
-      @apply shadow-lg shadow-primary/10 border-primary/20;
+      @apply shadow-xl shadow-primary/10;
   }
 }
