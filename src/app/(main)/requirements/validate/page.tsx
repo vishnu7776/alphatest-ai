@@ -66,7 +66,7 @@ export default function RequirementValidationPage() {
     const handleUpdateAndRevalidate = () => {
         setIsUpdating(true);
         setTimeout(() => {
-            router.push('/test-cases');
+            router.push('/requirements/list');
             setIsUpdating(false);
         }, 2000);
     };
