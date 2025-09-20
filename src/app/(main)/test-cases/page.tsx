@@ -64,7 +64,39 @@ const testCaseData: Requirement[] = [
       { id: 'TC-108', title: 'Consent Checkbox Mandatory', tags: ['GDPR'], status: 'Inprogress', scenario: 'Attempt to submit the registration form without checking the consent checkbox.', expectedResult: 'Form submission is blocked, and an error message "You must agree to the terms" is displayed.' },
     ],
   },
-  // Add another requirement if needed to test the accordion
+  {
+    id: 'HC-REQ-002',
+    title: 'Appointment Scheduling',
+    description: 'Enable patients to schedule, reschedule, or cancel appointments.',
+    version: 'BRD v1.0',
+    type: 'Functional',
+    deliverables: 'UI Calendar, Scheduling API, Notifications',
+    source: 'BRD v1.0',
+    testCasesCount: 5,
+    testCases: [
+      { id: 'TC-201', title: 'Schedule New Appointment', tags: ['Functional'], status: 'Pass', scenario: 'Patient selects a doctor, date, and time slot and confirms.', expectedResult: 'Appointment is successfully booked and appears in the patient\'s dashboard.' },
+      { id: 'TC-202', title: 'Reschedule Appointment', tags: ['Functional'], status: 'Pass', scenario: 'Patient changes the time/date of an existing appointment.', expectedResult: 'The appointment is updated with the new time/date.' },
+      { id: 'TC-203', title: 'Cancel Appointment', tags: ['Functional'], status: 'Fail', scenario: 'Patient cancels an upcoming appointment.', expectedResult: 'Appointment is removed from the dashboard and the time slot becomes available.' },
+      { id: 'TC-204', title: 'Double Booking Check', tags: ['Functional'], status: 'Inprogress', scenario: 'Attempt to book two appointments in the same time slot for the same doctor.', expectedResult: 'System prevents double booking and shows an error message.' },
+      { id: 'TC-205', title: 'View Doctor Availability', tags: ['Functional'], status: 'New', scenario: 'Patient selects a doctor to see their available time slots.', expectedResult: 'A calendar view shows all available slots for the selected doctor.' },
+    ],
+  },
+    {
+    id: 'HC-REQ-003',
+    title: 'Patient Dashboard Access',
+    description: 'Provide a secure dashboard for patients to view medical records.',
+    version: 'BRD v1.3',
+    type: 'Non-Functional',
+    deliverables: 'UI Dashboard, Data API, Security',
+    source: 'BRD v1.3',
+    testCasesCount: 4,
+    testCases: [
+      { id: 'TC-301', title: 'Secure Login', tags: ['Security', 'HIPAA'], status: 'Pass', scenario: 'User logs in with valid credentials.', expectedResult: 'User is authenticated and gains access to their personal dashboard.' },
+      { id: 'TC-302', title: 'Unauthorized Access Attempt', tags: ['Security', 'HIPAA'], status: 'Pass', scenario: 'Attempt to access a patient dashboard without logging in or with another user\'s session.', expectedResult: 'Access is denied and user is redirected to the login page.' },
+      { id: 'TC-303', title: 'Load Medical History', tags: ['Performance'], status: 'Inprogress', scenario: 'Patient navigates to the "Medical History" section of the dashboard.', expectedResult: 'The complete medical history loads in under 3 seconds.' },
+      { id: 'TC-304', title: 'Data Encryption Verification', tags: ['Security'], status: 'New', scenario: 'Verify that all patient data transmitted between the client and server is encrypted.', expectedResult: 'Network traffic analysis shows that all data is sent over HTTPS.' },
+    ],
+  },
 ];
 
 const getStatusIcon = (status: TestCase['status']) => {
@@ -214,15 +246,6 @@ export default function TestCasesPage() {
                     </Card>
                  ))}
             </Accordion>
-            
-            <div className="fixed bottom-0 left-0 right-0 lg:left-[--sidebar-width] p-4 bg-background/80 backdrop-blur-sm border-t border-border z-10">
-                <div className="flex justify-end gap-4 max-w-6xl mx-auto">
-                    <Button>
-                       Update Document & Re-validate
-                    </Button>
-                </div>
-            </div>
         </div>
     );
 }
-
