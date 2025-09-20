@@ -37,6 +37,8 @@ import {
   LogOut,
   LifeBuoy,
   ClipboardCheck,
+  LayoutGrid,
+  ChevronLeft,
 } from 'lucide-react';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -63,6 +65,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/">
                   <Home />
                   <span>Dashboard</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive('/projects')}>
+                <Link href="/projects">
+                  <LayoutGrid />
+                  <span>Projects</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -124,7 +134,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <header className="flex h-14 items-center gap-4 border-b bg-transparent px-4 lg:h-[60px] lg:px-6 sticky top-0 z-10">
           <SidebarTrigger className="lg:hidden" />
           <div className="flex-1 flex items-center gap-2">
-            {/* Back button removed from here */}
+             <Button variant="ghost" onClick={() => router.back()} className="lg:hidden">
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
