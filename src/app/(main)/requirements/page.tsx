@@ -5,11 +5,13 @@ import { Suspense } from 'react';
 
 export default function RequirementsPage() {
   return (
-    <div className="flex flex-col gap-2">
+    <div>
       <BackButton />
-      <Suspense>
-        <RequirementsForm />
-      </Suspense>
+      <div className="flex flex-col gap-2">
+        <Suspense>
+          <RequirementsForm />
+        </Suspense>
+      </div>
     </div>
   );
 }
