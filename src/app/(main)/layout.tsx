@@ -41,7 +41,7 @@ import {
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
 
   return (
     <SidebarProvider>

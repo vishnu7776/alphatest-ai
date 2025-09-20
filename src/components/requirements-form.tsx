@@ -120,9 +120,7 @@ function RequirementsFormContent() {
 
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showValidation, setShowValidation] = useState(searchParams.get('step') === 'validate');
-  const [addedSuggestions, setAddedSuggestions] = useState<string[]>([]);
-
+  
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -247,7 +245,9 @@ function RequirementsFormContent() {
     
     reader.onload = (e) => {
       const content = e.target?.result as string;
-      setFileContent(content);
+      // Do not set file content to the textarea
+      // setFileContent(content); 
+      setFileContent(content); // We still need the content for submission
       setProgress(100);
     };
 
@@ -275,90 +275,11 @@ function RequirementsFormContent() {
   
   const handleFormAction = (formData: FormData) => {
     setIsLoading(true);
+    // Use file content if available, otherwise use textarea content
     const requirements = fileContent || requirementsText;
     formData.set('requirements', requirements);
     formAction(formData);
   };
-
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  const handleProceed = () => {
-    setIsUpdating(true);
-    setTimeout(() => {
-        router.push('/test-cases');
-        setIsUpdating(false);
-    }, 2000);
-  }
-
-  const handleAddSuggestion = (suggestionId: string) => {
-    setAddedSuggestions((prev) => [...prev, suggestionId]);
-  }
-
-  const handleRemoveSuggestion = (suggestionId: string) => {
-    setAddedSuggestions((prev) => prev.filter((id) => id !== suggestionId));
-  };
-
-  if (isUpdating) {
-    return (
-       <div className="flex flex-col items-center justify-center gap-4 h-64">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="text-muted-foreground">Updating document and re-analyzing...</p>
-      </div>
-    )
-  }
-  
-  if (showValidation) {
-    return (
-      <div className="space-y-6 pb-24">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Requirement Document Validation</h1>
-          <p className="text-muted-foreground">Please review the findings below and update your document accordingly.</p>
-        </div>
-        
-        <div className="space-y-4">
-            <h3 className="text-lg font-semibold">AI Suggestions</h3>
-            {suggestions.map((suggestion) => (
-                 <Card key={suggestion.id}>
-                    <CardContent className="p-4 flex items-start gap-4">
-                        {getIconForPriority(suggestion.priority)}
-                        <div className="flex-grow">
-                            <h4 className="font-semibold">{suggestion.title}</h4>
-                            <p className="text-sm text-muted-foreground">{suggestion.message}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {addedSuggestions.includes(suggestion.id) ? (
-                              <>
-                                <Button size="sm" variant="outline" className="bg-green-100/10 border-green-500/50 text-green-500" disabled>
-                                    <Check className="mr-2 h-4 w-4" />
-                                    Added
-                                </Button>
-                                <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => handleRemoveSuggestion(suggestion.id)}>
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Remove
-                                </Button>
-                              </>
-                          ) : (
-                              <Button size="sm" onClick={() => handleAddSuggestion(suggestion.id)}>Add</Button>
-                          )}
-                        </div>
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
-
-        <div className="fixed bottom-0 left-0 right-0 lg:left-[--sidebar-width] p-4 bg-background/80 backdrop-blur-sm border-t border-border z-10">
-            <div className="flex justify-end gap-4 max-w-5xl mx-auto">
-                <Button variant="outline" onClick={handleProceed}>
-                    Proceed with warning
-                </Button>
-                <Button onClick={handleProceed}>
-                    Update Document & Re-validate
-                </Button>
-            </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -537,9 +458,8 @@ function RequirementsFormContent() {
              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
              <Button onClick={() => {
                 setShowModal(false);
-                router.push('/requirements?step=validate');
-                setShowValidation(true);
-                toast({ title: "Success", description: "Analysis complete. Please review the validation findings."});
+                router.push('/requirements/list');
+                toast({ title: "Success", description: "Analysis complete. Please review the requirement list."});
               }}>Continue</Button>
           </DialogFooter>
         </DialogContent>
