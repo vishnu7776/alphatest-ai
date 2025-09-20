@@ -264,31 +264,34 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                         
                         {activeTab === 'attachments' && (
                            <div className="space-y-4">
-                                {isEditing && (
-                                    <Card 
-                                        className="border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors cursor-pointer"
-                                        onClick={() => fileInputRef.current?.click()}
-                                    >
-                                        <CardContent className="p-6">
-                                            <div className="flex flex-col items-center justify-center text-center">
-                                                <UploadCloud className="h-8 w-8 text-primary" />
-                                                <p className="mt-2 text-sm font-semibold">
-                                                    Click to upload or drag and drop
-                                                </p>
-                                                <p className="mt-1 text-xs text-muted-foreground">
-                                                    PDF, DOC, PNG, JPG
-                                                </p>
-                                            </div>
-                                        </CardContent>
-                                        <Input 
-                                            ref={fileInputRef}
-                                            type="file" 
-                                            className="hidden" 
-                                            multiple 
-                                            onChange={handleFileChange}
-                                        />
-                                    </Card>
-                                )}
+                                <Card 
+                                    className={cn(
+                                        "border-2 border-dashed border-muted-foreground/30 transition-colors",
+                                        isEditing && "cursor-pointer hover:border-primary/50",
+                                        !isEditing && "opacity-50 pointer-events-none"
+                                    )}
+                                    onClick={() => isEditing && fileInputRef.current?.click()}
+                                >
+                                    <CardContent className="p-6">
+                                        <div className="flex flex-col items-center justify-center text-center">
+                                            <UploadCloud className="h-8 w-8 text-primary" />
+                                            <p className="mt-2 text-sm font-semibold">
+                                                Click to upload or drag and drop
+                                            </p>
+                                            <p className="mt-1 text-xs text-muted-foreground">
+                                                PDF, DOC, PNG, JPG
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                    <Input 
+                                        ref={fileInputRef}
+                                        type="file" 
+                                        className="hidden" 
+                                        multiple 
+                                        onChange={handleFileChange}
+                                        disabled={!isEditing}
+                                    />
+                                </Card>
 
                                 {attachments.length > 0 && (
                                     <div className="space-y-2">
@@ -355,7 +358,7 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                                     </div>
                                 )}
                                 
-                                <div className="space-y-4 opacity-50 pointer-events-none">
+                                <div className="space-y-4 hidden">
                                      <h4 className="font-semibold text-foreground">From Document</h4>
                                     <a href="/pdf/Patient Management_System_ User Stories.pdf" target="_blank" rel="noopener noreferrer">
                                         <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
@@ -472,5 +475,3 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
         </>
     )
 }
-
-    
