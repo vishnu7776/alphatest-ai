@@ -16,6 +16,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { FileWarning, AlertTriangle, Info, Loader2, Trash2 } from 'lucide-react';
+import { BackButton } from '@/components/back-button';
 
 const initialSuggestions = [
     {
@@ -132,6 +133,7 @@ export default function RequirementValidationPage() {
 
   return (
     <div className="pb-24 space-y-6">
+        <BackButton />
         <div>
             <h1 className="text-2xl font-bold tracking-tight">Requirement Document Validation</h1>
             <p className="text-muted-foreground">

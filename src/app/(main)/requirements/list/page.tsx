@@ -20,6 +20,7 @@ import {
 import { Search, HeartPulse, FileText, Loader2, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ScenarioDetailsSheet, Requirement } from '@/components/scenario-details-sheet';
+import { BackButton } from '@/components/back-button';
 
 
 const requirementsData: Requirement[] = [
@@ -175,6 +176,7 @@ export default function RequirementListPage() {
 
   return (
     <div className="pb-24 space-y-6">
+        <BackButton />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 className="text-2xl font-bold tracking-tight">Requirement List</h1>

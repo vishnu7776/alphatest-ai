@@ -21,6 +21,7 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { Search, HeartPulse, FileText, CheckCircle2, XCircle, Loader2, Link as LinkIcon, Flag } from 'lucide-react';
+import { BackButton } from '@/components/back-button';
 
 type TestCase = {
   id: string;
@@ -185,6 +186,7 @@ const RequirementTestCases = ({ requirement }: { requirement: Requirement }) => 
 export default function TestCasesPage() {
     return (
         <div className="space-y-6">
+            <BackButton />
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Generate Testcases</h1>
