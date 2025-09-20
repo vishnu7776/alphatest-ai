@@ -120,24 +120,28 @@ const getStatusBadge = (status: string) => {
   switch (status.toLowerCase()) {
     case 'passed':
       return (
-        <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 font-medium">
           Passed
         </Badge>
       );
     case 'failed':
       return (
-        <Badge variant="destructive">
+        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 font-medium">
           Failed
         </Badge>
       );
     case 'running':
        return (
-        <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
+        <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 font-medium">
           Running
         </Badge>
       );
     case 'pending':
-        return <Badge variant="secondary">Pending</Badge>;
+        return (
+          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200 font-medium">
+            Pending
+          </Badge>
+        );
     default:
       return <Badge variant="outline">{status}</Badge>;
   }
