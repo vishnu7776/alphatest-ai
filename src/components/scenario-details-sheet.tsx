@@ -328,6 +328,17 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
 
                         {activeTab === 'sub-tasks' && (
                             <div className="space-y-6">
+                                {isEditing && (
+                                    <div className="space-y-4">
+                                         <h4 className="font-semibold text-foreground">Update with Prompt</h4>
+                                        <Textarea
+                                            placeholder="e.g., Add two-factor authentication and enhance mobile responsiveness..."
+                                            value={editPrompt}
+                                            onChange={(e) => setEditPrompt(e.target.value)}
+                                            rows={3}
+                                        />
+                                    </div>
+                                )}
                                 {Object.keys(groupedTasks).length > 0 ? (
                                     Object.entries(groupedTasks).map(([category, tasks]) => (
                                         <div key={category}>
@@ -345,17 +356,6 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                                 ) : (
                                      <div className="text-center text-muted-foreground py-8">
                                         <p>No sub-tasks for this requirement.</p>
-                                    </div>
-                                )}
-                                 {isEditing && (
-                                    <div className="space-y-4 pt-4">
-                                         <h4 className="font-semibold text-foreground">Update with Prompt</h4>
-                                        <Textarea
-                                            placeholder="e.g., Add two-factor authentication and enhance mobile responsiveness..."
-                                            value={editPrompt}
-                                            onChange={(e) => setEditPrompt(e.target.value)}
-                                            rows={3}
-                                        />
                                     </div>
                                 )}
                             </div>
@@ -393,5 +393,3 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
         </>
     )
 }
-
-    
