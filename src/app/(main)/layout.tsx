@@ -119,7 +119,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-14 items-center gap-4 border-b bg-background/95 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6 sticky top-0 z-10">
+        <header className="flex h-14 items-center gap-4 border-b bg-transparent px-4 lg:h-[60px] lg:px-6 sticky top-0 z-10">
           <SidebarTrigger className="lg:hidden" />
           <div className="flex-1">
             {/* Can add breadcrumbs or title here */}
