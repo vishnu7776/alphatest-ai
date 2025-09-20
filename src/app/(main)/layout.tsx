@@ -35,6 +35,7 @@ import {
   Settings,
   LogOut,
   LifeBuoy,
+  ClipboardCheck,
 } from 'lucide-react';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -68,6 +69,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/requirements">
                   <FileText />
                   <span>Requirements</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive('/test-cases')}>
+                <Link href="/test-cases">
+                  <ClipboardCheck />
+                  <span>Test Cases</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

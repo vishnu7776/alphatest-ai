@@ -1,12 +1,14 @@
 'use client';
 
-import { useActionState, useEffect, useState, useRef } from 'react';
+import { useActionState, useEffect, useState, useRef, Suspense } from 'react';
 import { useFormStatus } from 'react-dom';
+import Image from 'next/image';
 import { generateTestCasesAction } from '@/app/(main)/requirements/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   AlertCircle,
   Loader2,
@@ -16,6 +18,10 @@ import {
   X,
   Check,
   Ban,
+  Info,
+  BookOpen,
+  AlertTriangle,
+  FileWarning
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from './ui/progress';
@@ -53,7 +59,10 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
   );
 }
 
-export function RequirementsForm() {
+function RequirementsFormContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [state, formAction] = useActionState(
     generateTestCasesAction,
     initialState
@@ -62,13 +71,13 @@ export function RequirementsForm() {
   const [progress, setProgress] = useState(0);
   const [requirementsText, setRequirementsText] = useState('');
   
-  // Speech recognition state
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const recognitionRef = useRef<any>(null);
 
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showValidation, setShowValidation] = useState(searchParams.get('step') === 'validate');
 
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -92,7 +101,6 @@ export function RequirementsForm() {
   }, [state, toast]);
 
   useEffect(() => {
-    // Check for browser support for Web Speech API
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition();
@@ -122,10 +130,7 @@ export function RequirementsForm() {
         setIsListening(false);
       };
       
-      recognitionRef.current.onend = () => {
-        // The onend event can fire unexpectedly, so we only update state if it was a user-initiated stop.
-        // We will manage isListening state in start/stop functions directly.
-      };
+      recognitionRef.current.onend = () => {};
 
     } else {
         console.warn("Speech recognition not supported in this browser.");
@@ -220,44 +225,121 @@ export function RequirementsForm() {
     if(fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    // For simplicity, we can leave the content in the textarea 
-    // or the user can clear it manually.
   };
   
   const handleFormAction = (formData: FormData) => {
     setIsLoading(true);
     formAction(formData);
   };
-  
-  // This is a new state to show the final results after the modal.
-  const [showResults, setShowResults] = useState(false);
 
-  if (showResults && (state.summary || state.testCases)) {
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  if (isUpdating) {
     return (
-       <Card>
-        <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-2">Generated Assets</h3>
-            <div className="space-y-4">
-              {state.summary && (
-                <div>
-                  <h4 className="font-semibold">Summary</h4>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{state.summary}</p>
-                </div>
-              )}
-               {state.testCases && (
-                <div>
-                  <h4 className="font-semibold">Test Cases</h4>
-                  <pre className="text-sm bg-muted/50 p-4 rounded-md whitespace-pre-wrap"><code>{state.testCases}</code></pre>
-                </div>
-              )}
-            </div>
-        </CardContent>
-      </Card>
+       <div className="flex flex-col items-center justify-center gap-4 h-64">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="text-muted-foreground">Updating document and re-analyzing...</p>
+      </div>
     )
+  }
+  
+
+  if (showValidation) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Requirement Document Validation</h1>
+          <p className="text-muted-foreground">Please review the findings below and update your document accordingly.</p>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Healthcare Compliance Check</h3>
+                <Card>
+                    <CardContent className="p-4 flex items-start gap-4">
+                        <FileWarning className="h-8 w-8 text-destructive mt-1" />
+                        <div>
+                            <h4 className="font-semibold">Missing Country / Regional Information</h4>
+                            <p className="text-sm text-muted-foreground">With Country Details we can accurately map the relevant compliance with it.</p>
+                            <div className="mt-3 flex gap-2">
+                                <Button size="sm" variant="destructive">Fetch Automatically</Button>
+                                <Button size="sm" variant="outline">Add Manually</Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardContent className="p-4 flex items-start gap-4">
+                        <AlertTriangle className="h-8 w-8 text-yellow-500 mt-1" />
+                        <div>
+                            <h4 className="font-semibold">Identified Compliance Gaps- HIPAA</h4>
+                            <p className="text-sm text-muted-foreground">Provide a detailed section on how your system will handle sensitive patient data, including encryption, access controls, and data retention policies.</p>
+                             <div className="mt-3">
+                                <Button size="sm">Add</Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+             <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Requirement Detail Suggestions</h3>
+                <Card>
+                    <CardContent className="p-4 flex items-start gap-4">
+                        <Info className="h-8 w-8 text-blue-500 mt-1" />
+                        <div>
+                            <h4 className="font-semibold">Incomplete Login Screen Details</h4>
+                            <p className="text-sm text-muted-foreground">Add a dedicated section for 'Authentication and Session Management' to cover these details comprehensively.</p>
+                             <div className="mt-3">
+                                <Button size="sm" variant="outline">Add</Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardContent className="p-4 flex items-start gap-4">
+                        <BookOpen className="h-8 w-8 text-orange-500 mt-1" />
+                        <div>
+                            <h4 className="font-semibold">Missing Non-Functional Requirements</h4>
+                            <p className="text-sm text-muted-foreground">Add non-functional requirements for performance (e.g., 'the history must load in under 2 seconds') and security (e.g., 'data must be encrypted at rest').</p>
+                             <div className="mt-3">
+                                <Button size="sm" variant="outline">Add</Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+
+        <div className="flex justify-end gap-4 mt-8">
+            <Button variant="outline" onClick={() => {
+                setIsUpdating(true);
+                setTimeout(() => {
+                    router.push('/test-cases');
+                    setIsUpdating(false);
+                }, 2000);
+            }}>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Update Document & Re-validate
+            </Button>
+            <Button onClick={() => router.push('/test-cases')}>
+                Proceed with warning
+            </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <>
+     <div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Import Requirement
+        </h1>
+        <p className="text-muted-foreground">
+          Upload your software requirements document, type them directly, or use
+          your voice. Our AI will analyze it for completeness and compliance.
+        </p>
+      </div>
     <form ref={formRef} action={handleFormAction} className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3">
@@ -424,12 +506,21 @@ export function RequirementsForm() {
              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
              <Button onClick={() => {
                 setShowModal(false);
-                setShowResults(true); // Show the results view
-                toast({ title: "Success", description: "Test cases are being generated."});
+                router.push('/requirements?step=validate');
+                setShowValidation(true);
+                toast({ title: "Success", description: "Analysis complete. Please review the validation findings."});
               }}>Continue</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
   );
+}
+
+export function RequirementsForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RequirementsFormContent />
+    </Suspense>
+  )
 }
