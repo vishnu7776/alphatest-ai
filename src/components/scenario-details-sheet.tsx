@@ -1,18 +1,19 @@
 
 'use client';
 
+import { useState } from "react";
+import Image from "next/image";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-  SheetClose
 } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X, Pencil, FileText } from "lucide-react";
+import { Pencil, FileText } from "lucide-react";
 import { Separator } from "./ui/separator";
 
 export type SubTask = {
@@ -41,7 +42,11 @@ interface ScenarioDetailsSheetProps {
     requirement: Requirement;
 }
 
+type ActiveTab = 'workflow' | 'attachments' | 'sub-tasks';
+
 export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioDetailsSheetProps) {
+    const [activeTab, setActiveTab] = useState<ActiveTab>('sub-tasks');
+    
     const groupedTasks = requirement.subTasks.reduce((acc, task) => {
         (acc[task.category] = acc[task.category] || []).push(task);
         return acc;
@@ -53,7 +58,6 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                 <SheetHeader className="p-6">
                     <div className="flex justify-between items-start">
                         <SheetTitle className="text-lg font-semibold">Scenario Details</SheetTitle>
-                        {/* The default close button is rendered by SheetContent, so this one is removed. */}
                     </div>
 
                     <div className="space-y-2 text-left pt-4">
@@ -97,26 +101,72 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
 
                 <div className="px-6 flex-1 overflow-y-auto pb-6">
                      <div className="flex items-center gap-4 mb-6">
-                        <Button variant="ghost" size="sm" className="text-muted-foreground">Work flow</Button>
-                        <Button variant="ghost" size="sm" className="text-muted-foreground">Attachments</Button>
-                        <Button variant="default" size="sm">Sub Tasks</Button>
+                        <Button 
+                            variant={activeTab === 'workflow' ? 'default' : 'ghost'} 
+                            size="sm" 
+                            className={activeTab !== 'workflow' ? 'text-muted-foreground' : ''}
+                            onClick={() => setActiveTab('workflow')}
+                        >
+                            Work flow
+                        </Button>
+                        <Button 
+                            variant={activeTab === 'attachments' ? 'default' : 'ghost'} 
+                            size="sm" 
+                            className={activeTab !== 'attachments' ? 'text-muted-foreground' : ''}
+                            onClick={() => setActiveTab('attachments')}
+                        >
+                            Attachments
+                        </Button>
+                        <Button 
+                            variant={activeTab === 'sub-tasks' ? 'default' : 'ghost'} 
+                            size="sm" 
+                            className={activeTab !== 'sub-tasks' ? 'text-muted-foreground' : ''}
+                            onClick={() => setActiveTab('sub-tasks')}
+                        >
+                            Sub Tasks
+                        </Button>
                     </div>
                     
-                    <div className="space-y-6">
-                        {Object.entries(groupedTasks).map(([category, tasks]) => (
-                            <div key={category}>
-                                <h4 className="font-semibold text-foreground mb-3">{category}</h4>
-                                <div className="space-y-3">
-                                    {tasks.map((subtask, index) => (
-                                        <div key={index} className="flex items-start gap-3">
-                                            <Checkbox id={`${category}-${index}`} checked={subtask.completed} className="mt-1" />
-                                            <label htmlFor={`${category}-${index}`} className="text-sm text-muted-foreground">{subtask.task}</label>
-                                        </div>
-                                    ))}
+                    {activeTab === 'workflow' && (
+                        <div className="flex justify-center">
+                            <Image 
+                                src="/sampleFlowChart.png" 
+                                alt="Workflow Chart" 
+                                width={500} 
+                                height={700}
+                                className="object-contain"
+                            />
+                        </div>
+                    )}
+                    
+                    {activeTab === 'attachments' && (
+                        <div className="text-center text-muted-foreground">
+                            <p>No attachments found.</p>
+                        </div>
+                    )}
+
+                    {activeTab === 'sub-tasks' && (
+                        <div className="space-y-6">
+                            {Object.entries(groupedTasks).map(([category, tasks]) => (
+                                <div key={category}>
+                                    <h4 className="font-semibold text-foreground mb-3">{category}</h4>
+                                    <div className="space-y-3">
+                                        {tasks.map((subtask, index) => (
+                                            <div key={index} className="flex items-start gap-3">
+                                                <Checkbox id={`${category}-${index}`} checked={subtask.completed} className="mt-1" />
+                                                <label htmlFor={`${category}-${index}`} className="text-sm text-muted-foreground">{subtask.task}</label>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                             {Object.keys(groupedTasks).length === 0 && (
+                                <div className="text-center text-muted-foreground">
+                                    <p>No sub-tasks for this requirement.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
             </SheetContent>
