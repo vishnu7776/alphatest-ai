@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import {
   Sheet,
@@ -14,6 +14,9 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  DialogHeader,
+  DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +26,7 @@ import { Pencil, FileText, UploadCloud, Trash2 } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
 import { cn } from "@/lib/utils";
 
 export type SubTask = {
@@ -53,6 +57,15 @@ interface ScenarioDetailsSheetProps {
 
 type ActiveTab = 'workflow' | 'attachments' | 'sub-tasks';
 
+const alternativeSubTasks: SubTask[] = [
+    { category: 'UI/UX Enhancement', task: 'Redesign form for better mobile responsiveness', completed: false },
+    { category: 'UI/UX Enhancement', task: 'Add progress bar for multi-step registration', completed: false },
+    { category: 'Backend Refactoring', task: 'Migrate patient data to a new schema version', completed: false },
+    { category: 'Backend Refactoring', task: 'Optimize API endpoint for faster patient creation', completed: false },
+    { category: 'Advanced Security', task: 'Implement two-factor authentication (2FA) for patient accounts', completed: false },
+    { category: 'Advanced Security', task: 'Add detailed audit logging for data access', completed: false },
+];
+
 
 const formatBytes = (bytes: number, decimals = 2) => {
     if (bytes === 0) return '0 Bytes';
@@ -69,11 +82,13 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [attachments, setAttachments] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editPrompt, setEditPrompt] = useState('');
+    const [currentRequirement, setCurrentRequirement] = useState(requirement);
     
-    const groupedTasks = requirement.subTasks.reduce((acc, task) => {
-        (acc[task.category] = acc[task.category] || []).push(task);
-        return acc;
-    }, {} as Record<string, SubTask[]>);
+    useEffect(() => {
+        setCurrentRequirement(requirement);
+    }, [requirement]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
@@ -84,6 +99,22 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
     const handleRemoveAttachment = (index: number) => {
         setAttachments(prev => prev.filter((_, i) => i !== index));
     }
+    
+    const handleSaveEdit = () => {
+        console.log('Updating with prompt:', editPrompt);
+        // Simulate backend update by toggling subtasks
+        setCurrentRequirement(prev => ({
+            ...prev,
+            subTasks: prev.subTasks.length === requirement.subTasks.length ? alternativeSubTasks : requirement.subTasks
+        }));
+        setIsEditModalOpen(false);
+        setEditPrompt('');
+    };
+
+    const groupedTasks = currentRequirement.subTasks.reduce((acc, task) => {
+        (acc[task.category] = acc[task.category] || []).push(task);
+        return acc;
+    }, {} as Record<string, SubTask[]>);
 
 
     return (
@@ -91,42 +122,44 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
             <Sheet open={isOpen} onOpenChange={onClose}>
                 <SheetContent className="w-full sm:max-w-[600px] p-0 flex flex-col">
                     <SheetHeader className="p-6">
+                         <VisuallyHidden>
+                           <SheetTitle>Scenario Details</SheetTitle>
+                           <SheetDescription>View and manage the details for this requirement scenario.</SheetDescription>
+                         </VisuallyHidden>
                         <div className="space-y-2 text-left pt-4">
                             <div className="flex items-center gap-2">
-                               <p className="font-semibold text-primary text-sm">{requirement.id}</p>
-                               <Badge variant="outline">{requirement.type}</Badge>
+                               <p className="font-semibold text-primary text-sm">{currentRequirement.id}</p>
+                               <Badge variant="outline">{currentRequirement.type}</Badge>
                             </div>
                             <div className="flex items-center justify-between">
-                                <SheetTitle asChild>
-                                  <h2 className="text-2xl font-bold text-foreground">{requirement.title}</h2>
-                                </SheetTitle>
-                                <Button variant="ghost" size="icon">
+                                <h2 className="text-2xl font-bold text-foreground">{currentRequirement.title}</h2>
+                                <Button variant="ghost" size="icon" onClick={() => setIsEditModalOpen(true)}>
                                     <Pencil className="h-4 w-4" />
                                 </Button>
                             </div>
-                            <SheetDescription>{requirement.description}</SheetDescription>
+                            <p className="text-muted-foreground">{currentRequirement.description}</p>
                         </div>
                     </SheetHeader>
 
                     <div className="px-6 space-y-4 text-sm">
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">Project Name</span>
-                            <span className="font-semibold text-foreground">{requirement.projectName}</span>
+                            <span className="font-semibold text-foreground">{currentRequirement.projectName}</span>
                         </div>
                          <div className="flex justify-between">
                             <span className="text-muted-foreground">Requirement Source</span>
                             <div className="flex items-center gap-2">
-                                <span className="font-semibold text-foreground">{requirement.source}</span>
+                                <span className="font-semibold text-foreground">{currentRequirement.source}</span>
                                 <FileText className="h-4 w-4 text-muted-foreground" />
                             </div>
                         </div>
                          <div className="flex justify-between">
                             <span className="text-muted-foreground">WBS Deliverables</span>
-                            <span className="font-semibold text-foreground max-w-[60%] truncate">{requirement.deliverables}</span>
+                            <span className="font-semibold text-foreground max-w-[60%] truncate">{currentRequirement.deliverables}</span>
                         </div>
                          <div className="flex justify-between">
                             <span className="text-muted-foreground">Status</span>
-                            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">{requirement.status}</Badge>
+                            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">{currentRequirement.status}</Badge>
                         </div>
                     </div>
 
@@ -137,7 +170,7 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                             <Button 
                                 variant={activeTab === 'workflow' ? 'default' : 'ghost'} 
                                 size="sm" 
-                                className={activeTab !== 'workflow' ? 'text-muted-foreground' : ''}
+                                className={cn('text-muted-foreground', activeTab === 'workflow' && 'text-primary-foreground')}
                                 onClick={() => setActiveTab('workflow')}
                             >
                                 Work flow
@@ -145,7 +178,7 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                             <Button 
                                 variant={activeTab === 'attachments' ? 'default' : 'ghost'} 
                                 size="sm" 
-                                className={activeTab !== 'attachments' ? 'text-muted-foreground' : ''}
+                                className={cn('text-muted-foreground', activeTab === 'attachments' && 'text-primary-foreground')}
                                 onClick={() => setActiveTab('attachments')}
                             >
                                 Attachments
@@ -153,7 +186,7 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                             <Button 
                                 variant={activeTab === 'sub-tasks' ? 'default' : 'ghost'} 
                                 size="sm" 
-                                className={activeTab !== 'sub-tasks' ? 'text-muted-foreground' : ''}
+                                className={cn('text-muted-foreground', activeTab === 'sub-tasks' && 'text-primary-foreground')}
                                 onClick={() => setActiveTab('sub-tasks')}
                             >
                                 Sub Tasks
@@ -163,7 +196,7 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                         {activeTab === 'workflow' && (
                             <div className="flex justify-center">
                                 <Image 
-                                    src="/sampleFlowChart.png?v=2" 
+                                    src="/sampleFlowChart.png?v=3" 
                                     alt="Workflow Chart" 
                                     width={500} 
                                     height={700}
@@ -305,6 +338,30 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                 </SheetContent>
             </Sheet>
             
+             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Requirement</DialogTitle>
+                        <DialogDescription>
+                            Enter a prompt to update the requirement details. Our AI will process your request.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Textarea 
+                            placeholder="e.g., Add two-factor authentication and enhance mobile responsiveness for the form."
+                            value={editPrompt}
+                            onChange={(e) => setEditPrompt(e.target.value)}
+                            rows={4}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleSaveEdit}>Save</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+
             <Dialog open={!!previewImage} onOpenChange={(isOpen) => !isOpen && setPreviewImage(null)}>
                 <DialogContent className="max-w-3xl">
                      <DialogTitle>
@@ -316,5 +373,3 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
         </>
     )
 }
-
-    
