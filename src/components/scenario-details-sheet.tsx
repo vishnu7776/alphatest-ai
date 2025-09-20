@@ -56,6 +56,20 @@ interface ScenarioDetailsSheetProps {
 
 type ActiveTab = 'workflow' | 'attachments' | 'sub-tasks';
 
+const originalSubTasks: SubTask[] = [
+    { category: 'Form Design & UI', task: 'Design registration form layout (personal info, contact info, insurance info sections)', completed: false },
+    { category: 'Form Design & UI', task: 'Define required and optional fields with labels and placeholders', completed: false },
+    { category: 'Form Design & UI', task: 'Implement client-side field validations (email, phone, DOB, required fields)', completed: false },
+    { category: 'Backend Development', task: 'Design database schema for patient and insurance data', completed: false },
+    { category: 'Backend Development', task: 'Implement API endpoint to create patient records', completed: false },
+    { category: 'Security & Compliance', task: 'Enforce HTTPS for secure data transfer', completed: false },
+    { category: 'Security & Compliance', task: 'Implement input sanitization and prevent injection attacks', completed: false },
+    { category: 'Security & Compliance', task: 'Ensure compliance with HIPAA/local healthcare data privacy rules', completed: false },
+    { category: 'Insurance Integration', task: 'Add insurance provider, policy number, coverage fields', completed: false },
+    { category: 'Insurance Integration', task: 'Validate insurance data format and completeness', completed: false },
+    { category: 'Insurance Integration', task: '(Optional) Integrate with external insurance verification APIs', completed: false },
+];
+
 const alternativeSubTasks: SubTask[] = [
     { category: 'UI/UX Enhancement', task: 'Redesign form for better mobile responsiveness', completed: false },
     { category: 'UI/UX Enhancement', task: 'Add progress bar for multi-step registration', completed: false },
@@ -89,7 +103,12 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
 
 
     useEffect(() => {
-        setCurrentRequirement(requirement);
+        // Ensure the initial requirement object has the correct sub-tasks
+        const initialRequirement = {
+            ...requirement,
+            subTasks: requirement.id === 'HC-REQ-001' && requirement.subTasks.length === 0 ? originalSubTasks : requirement.subTasks
+        };
+        setCurrentRequirement(initialRequirement);
     }, [requirement]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,10 +126,13 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
         console.log('Updating with prompt:', editPrompt);
         // Simulate backend update by toggling subtasks
         setTimeout(() => {
-            setCurrentRequirement(prev => ({
-                ...prev,
-                subTasks: prev.subTasks.length === requirement.subTasks.length ? alternativeSubTasks : requirement.subTasks
-            }));
+            setCurrentRequirement(prev => {
+                const isOriginal = prev.subTasks[0]?.category === 'Form Design & UI';
+                return {
+                    ...prev,
+                    subTasks: isOriginal ? alternativeSubTasks : originalSubTasks
+                }
+            });
             setIsUpdating(false);
             setIsEditing(false);
             setEditPrompt('');
@@ -393,3 +415,5 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
         </>
     )
 }
+
+    

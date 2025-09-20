@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -33,19 +34,7 @@ const requirementsData: Requirement[] = [
     testCases: 12,
     projectName: 'Healthy me',
     status: 'New',
-    subTasks: [
-        { category: 'Form Design & UI', task: 'Design registration form layout (personal info, contact info, insurance info sections)', completed: false },
-        { category: 'Form Design & UI', task: 'Define required and optional fields with labels and placeholders', completed: false },
-        { category: 'Form Design & UI', task: 'Implement client-side field validations (email, phone, DOB, required fields)', completed: false },
-        { category: 'Backend Development', task: 'Design database schema for patient and insurance data', completed: false },
-        { category: 'Backend Development', task: 'Implement API endpoint to create patient records', completed: false },
-        { category: 'Security & Compliance', task: 'Enforce HTTPS for secure data transfer', completed: false },
-        { category: 'Security & Compliance', task: 'Implement input sanitization and prevent injection attacks', completed: false },
-        { category: 'Security & Compliance', task: 'Ensure compliance with HIPAA/local healthcare data privacy rules', completed: false },
-        { category: 'Insurance Integration', task: 'Add insurance provider, policy number, coverage fields', completed: false },
-        { category: 'Insurance Integration', task: 'Validate insurance data format and completeness', completed: false },
-        { category: 'Insurance Integration', task: '(Optional) Integrate with external insurance verification APIs', completed: false },
-    ]
+    subTasks: []
   },
   {
     id: 'HC-REQ-002',
@@ -244,3 +233,5 @@ export default function RequirementListPage() {
     </div>
   );
 }
+
+    
