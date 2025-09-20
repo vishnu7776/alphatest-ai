@@ -76,57 +76,25 @@ const requirementsData = [
   },
 ];
 
+const RequirementListContent = ({ requirements }: { requirements: typeof requirementsData }) => {
+    const { toast } = useToast();
 
-export default function RequirementListPage() {
-  const router = useRouter();
-  const { toast } = useToast();
-  const [isGenerating, setIsGenerating] = useState(false);
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        toast({
+            title: "Copied!",
+            description: "Requirement source copied to clipboard.",
+        });
+    };
 
-  const handleGenerate = () => {
-    setIsGenerating(true);
-    setTimeout(() => {
-        router.push('/test-cases');
-        setIsGenerating(false);
-    }, 2000);
-  }
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-        title: "Copied!",
-        description: "Requirement source copied to clipboard.",
-    });
-  }
-
-  return (
-    <div className="pb-24 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h1 className="text-2xl font-bold tracking-tight">Requirement List</h1>
-            <p className="text-muted-foreground">
-            Please review the findings below and update your document accordingly.
-            </p>
-        </div>
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search" className="pl-9" />
-        </div>
-      </div>
-
-      <Tabs defaultValue="new">
-        <TabsList>
-          <TabsTrigger value="new">New</TabsTrigger>
-          <TabsTrigger value="inprogress">Inprogress</TabsTrigger>
-          <TabsTrigger value="tested">Tested</TabsTrigger>
-        </TabsList>
-        <TabsContent value="new" className="mt-4">
-          <div className="grid grid-cols-1 gap-x-4 gap-y-2 text-sm font-semibold text-muted-foreground px-4 mb-2 md:grid-cols-3">
+    return (
+        <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-2 text-sm font-semibold text-muted-foreground px-4 mb-2 md:grid-cols-3">
               <div>Requirement Details</div>
               <div className="hidden md:block">WBS Deliverables</div>
               <div className="hidden md:block">Requirement Source</div>
           </div>
-          <div className="space-y-4">
-            {requirementsData.map((req) => (
+            {requirements.map((req) => (
               <Card key={req.id}>
                 <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
                   <div className="flex items-start gap-4">
@@ -154,6 +122,51 @@ export default function RequirementListPage() {
               </Card>
             ))}
           </div>
+    )
+}
+
+
+export default function RequirementListPage() {
+  const router = useRouter();
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setTimeout(() => {
+        router.push('/test-cases');
+        setIsGenerating(false);
+    }, 2000);
+  }
+
+  return (
+    <div className="pb-24 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 className="text-2xl font-bold tracking-tight">Requirement List</h1>
+            <p className="text-muted-foreground">
+            Please review the findings below and update your document accordingly.
+            </p>
+        </div>
+        <div className="relative w-full max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Search" className="pl-9" />
+        </div>
+      </div>
+
+      <Tabs defaultValue="new">
+        <TabsList>
+          <TabsTrigger value="new">New</TabsTrigger>
+          <TabsTrigger value="inprogress">Inprogress</TabsTrigger>
+          <TabsTrigger value="tested">Tested</TabsTrigger>
+        </TabsList>
+        <TabsContent value="new" className="mt-4">
+          <RequirementListContent requirements={requirementsData} />
+        </TabsContent>
+         <TabsContent value="inprogress" className="mt-4">
+          <RequirementListContent requirements={requirementsData} />
+        </TabsContent>
+         <TabsContent value="tested" className="mt-4">
+          <RequirementListContent requirements={requirementsData} />
         </TabsContent>
       </Tabs>
 
