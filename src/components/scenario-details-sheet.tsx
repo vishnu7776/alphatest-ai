@@ -53,11 +53,7 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                 <SheetHeader className="p-6">
                     <div className="flex justify-between items-start">
                         <SheetTitle className="text-lg font-semibold">Scenario Details</SheetTitle>
-                        <SheetClose asChild>
-                            <Button variant="ghost" size="icon">
-                                <X className="h-5 w-5" />
-                            </Button>
-                        </SheetClose>
+                        {/* The default close button is rendered by SheetContent, so this one is removed. */}
                     </div>
 
                     <div className="space-y-2 text-left pt-4">
