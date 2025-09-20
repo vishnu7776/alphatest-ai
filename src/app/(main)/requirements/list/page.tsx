@@ -16,7 +16,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { Search, HeartPulse, FileText, Copy, Loader2 } from 'lucide-react';
+import { Search, HeartPulse, FileText, Loader2, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const requirementsData = [
@@ -28,6 +28,7 @@ const requirementsData = [
     type: 'Functional',
     deliverables: 'UI Form Design, Registration API, Data Validation Rules, DB Schema',
     source: 'BRD v1.2',
+    testCases: 12,
   },
   {
     id: 'HC-REQ-002',
@@ -37,6 +38,7 @@ const requirementsData = [
     type: 'Functional',
     deliverables: 'UI Calendar Integration, Scheduling API, Notification System, DB Schema',
     source: 'BRD v1.0',
+    testCases: 12,
   },
   {
     id: 'HC-REQ-003',
@@ -46,6 +48,7 @@ const requirementsData = [
     type: 'Functional',
     deliverables: 'UI Dashboard Design, Data Fetching API, Security Measures, DB Updates',
     source: 'BRD v1.3',
+    testCases: 12,
   },
   {
     id: 'HC-REQ-004',
@@ -55,6 +58,7 @@ const requirementsData = [
     type: 'Functional',
     deliverables: 'UI Video Call Integration, Telehealth API, User Authentication, DB Mana...',
     source: 'BRD v1.4',
+    testCases: 12,
   },
   {
     id: 'HC-REQ-005',
@@ -64,6 +68,7 @@ const requirementsData = [
     type: 'Functional',
     deliverables: 'UI Reminder System, Medication Database, Notification API, Data Priva...',
     source: 'BRD v1.0',
+    testCases: 12,
   },
    {
     id: 'HC-REQ-006',
@@ -73,49 +78,49 @@ const requirementsData = [
     type: 'Functional',
     deliverables: 'UI Records Viewer, Access Control Implementation, API for Sharing Dat...',
     source: 'BRD v1.2',
+    testCases: 12,
   },
 ];
 
 const RequirementListContent = ({ requirements }: { requirements: typeof requirementsData }) => {
     const { toast } = useToast();
 
-    const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
-        toast({
-            title: "Copied!",
-            description: "Requirement source copied to clipboard.",
-        });
-    };
-
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-x-4 gap-y-2 text-sm font-semibold text-muted-foreground px-4 mb-2 md:grid-cols-3">
-              <div>Requirement Details</div>
-              <div className="hidden md:block">WBS Deliverables</div>
-              <div className="hidden md:block">Requirement Source</div>
+            <div className="grid grid-cols-12 gap-x-4 gap-y-2 text-sm font-semibold text-muted-foreground px-4 mb-2">
+              <div className="col-span-12 md:col-span-4">Requirement Details</div>
+              <div className="col-span-12 md:col-span-3 hidden md:block">WBS Deliverables</div>
+              <div className="col-span-12 md:col-span-3 hidden md:block">Requirement Source</div>
+              <div className="col-span-12 md:col-span-2 hidden md:block">Test Cases</div>
           </div>
             {requirements.map((req) => (
               <Card key={req.id}>
-                <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
-                  <div className="flex items-start gap-4">
+                <CardContent className="p-4 grid grid-cols-12 items-center gap-4">
+                  <div className="col-span-12 md:col-span-4 flex items-start gap-4">
                     <div className="p-2 rounded-full bg-primary/10">
                         <HeartPulse className="w-6 h-6 text-primary" />
                     </div>
                     <div>
                       <p className="font-semibold text-foreground">{req.id}: {req.title}</p>
                       <p className="text-xs text-muted-foreground">{req.description}</p>
-                      <p className="text-xs font-semibold text-primary mt-1">{req.version}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs font-semibold text-primary">{req.version}</p>
+                        <Badge variant="outline" className="md:hidden ml-auto">{req.type}</Badge>
+                      </div>
                     </div>
-                    <Badge variant="outline" className="md:hidden ml-auto">{req.type}</Badge>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="col-span-12 md:col-span-3 flex items-center gap-4">
                     <Badge variant="outline" className="hidden md:inline-flex">{req.type}</Badge>
                     <p className="text-sm text-muted-foreground">{req.deliverables}</p>
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="col-span-12 md:col-span-3 flex items-center gap-2">
                     <p className="text-sm text-muted-foreground">{req.source}</p>
-                    <Button variant="ghost" size="icon" onClick={() => copyToClipboard(req.source)}>
-                      <Copy className="h-4 w-4"/>
+                    <FileText className="h-4 w-4 text-muted-foreground"/>
+                  </div>
+                  <div className="col-span-12 md:col-span-2 flex items-center gap-2">
+                    <p className="text-sm text-muted-foreground">{req.testCases}</p>
+                    <Button variant="ghost" size="icon">
+                      <Eye className="h-4 w-4"/>
                     </Button>
                   </div>
                 </CardContent>
