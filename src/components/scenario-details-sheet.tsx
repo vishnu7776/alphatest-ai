@@ -166,7 +166,6 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
         return acc;
     }, {} as Record<string, SubTask[]>);
 
-    const displayedAttachments = isEditing ? attachments : savedAttachments;
 
     return (
         <>
@@ -291,12 +290,10 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                                     </Card>
                                 )}
 
-                                {(savedAttachments.length > 0 || attachments.length > 0) && (
+                                {attachments.length > 0 && (
                                     <div className="space-y-2">
-                                        <h4 className="font-semibold text-foreground">
-                                            {isEditing ? 'Staged Files' : 'Uploaded Files'}
-                                        </h4>
-                                        { (isEditing ? attachments : savedAttachments).map((file, index) => (
+                                        <h4 className="font-semibold text-foreground">Staged Files</h4>
+                                        {attachments.map((file, index) => (
                                             <Card key={index}>
                                                 <CardContent className="p-3 flex items-center justify-between">
                                                     <div className="flex items-center gap-3">
@@ -327,8 +324,39 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                                         ))}
                                     </div>
                                 )}
+
+                                {savedAttachments.length > 0 && (
+                                     <div className="space-y-2">
+                                        <h4 className="font-semibold text-foreground">Uploaded Files</h4>
+                                        {savedAttachments.map((file, index) => (
+                                            <Card key={index}>
+                                                <CardContent className="p-3 flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        {file.type.startsWith('image/') ? (
+                                                            <Image 
+                                                                src={URL.createObjectURL(file)} 
+                                                                alt={file.name} 
+                                                                width={40} 
+                                                                height={40}
+                                                                className="object-cover rounded-md"
+                                                                onLoad={() => URL.revokeObjectURL(URL.createObjectURL(file))}
+                                                            />
+                                                        ) : (
+                                                            <FileText className="w-8 h-8 text-muted-foreground" />
+                                                        )}
+                                                        <div>
+                                                            <p className="text-sm font-medium text-foreground">{file.name}</p>
+                                                            <p className="text-xs text-muted-foreground">{formatBytes(file.size)}</p>
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                )}
                                 
-                                <div className="hidden">
+                                <div className="space-y-4 opacity-50 pointer-events-none">
+                                     <h4 className="font-semibold text-foreground">From Document</h4>
                                     <a href="/pdf/Patient Management_System_ User Stories.pdf" target="_blank" rel="noopener noreferrer">
                                         <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
                                             <CardContent className="p-4 flex items-center gap-4">
@@ -444,3 +472,5 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
         </>
     )
 }
+
+    
