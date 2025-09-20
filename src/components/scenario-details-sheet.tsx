@@ -15,14 +15,12 @@ import {
   DialogContent,
   DialogTitle,
   DialogHeader,
-  DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Pencil, FileText, UploadCloud, Trash2 } from "lucide-react";
+import { FileText, UploadCloud, Trash2 } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Input } from "./ui/input";
@@ -82,7 +80,6 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [attachments, setAttachments] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editPrompt, setEditPrompt] = useState('');
     const [currentRequirement, setCurrentRequirement] = useState(requirement);
     
@@ -100,14 +97,13 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
         setAttachments(prev => prev.filter((_, i) => i !== index));
     }
     
-    const handleSaveEdit = () => {
+    const handleUpdateSubtasks = () => {
         console.log('Updating with prompt:', editPrompt);
         // Simulate backend update by toggling subtasks
         setCurrentRequirement(prev => ({
             ...prev,
             subTasks: prev.subTasks.length === requirement.subTasks.length ? alternativeSubTasks : requirement.subTasks
         }));
-        setIsEditModalOpen(false);
         setEditPrompt('');
     };
 
@@ -123,8 +119,8 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                 <SheetContent className="w-full sm:max-w-[600px] p-0 flex flex-col">
                     <SheetHeader className="p-6">
                          <VisuallyHidden>
-                           <SheetTitle>Scenario Details</SheetTitle>
-                           <SheetDescription>View and manage the details for this requirement scenario.</SheetDescription>
+                           <SheetTitle>{currentRequirement.title}</SheetTitle>
+                           <SheetDescription>{currentRequirement.description}</SheetDescription>
                          </VisuallyHidden>
                         <div className="space-y-2 text-left pt-4">
                             <div className="flex items-center gap-2">
@@ -133,9 +129,6 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                             </div>
                             <div className="flex items-center justify-between">
                                 <h2 className="text-2xl font-bold text-foreground">{currentRequirement.title}</h2>
-                                <Button variant="ghost" size="icon" onClick={() => setIsEditModalOpen(true)}>
-                                    <Pencil className="h-4 w-4" />
-                                </Button>
                             </div>
                             <p className="text-muted-foreground">{currentRequirement.description}</p>
                         </div>
@@ -245,6 +238,7 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                                                                 width={40} 
                                                                 height={40}
                                                                 className="object-cover rounded-md"
+                                                                onLoad={() => URL.revokeObjectURL(URL.createObjectURL(file))}
                                                             />
                                                         ) : (
                                                             <FileText className="w-8 h-8 text-muted-foreground" />
@@ -314,62 +308,57 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
 
                         {activeTab === 'sub-tasks' && (
                             <div className="space-y-6">
-                                {Object.entries(groupedTasks).map(([category, tasks]) => (
-                                    <div key={category}>
-                                        <h4 className="font-semibold text-foreground mb-3">{category}</h4>
-                                        <div className="space-y-3">
-                                            {tasks.map((subtask, index) => (
-                                                <div key={index} className="flex items-start gap-3">
-                                                    <Checkbox id={`${category}-${index}`} checked={subtask.completed} className="mt-1" />
-                                                    <label htmlFor={`${category}-${index}`} className="text-sm text-muted-foreground">{subtask.task}</label>
-                                                </div>
-                                            ))}
+                                {Object.keys(groupedTasks).length > 0 ? (
+                                    Object.entries(groupedTasks).map(([category, tasks]) => (
+                                        <div key={category}>
+                                            <h4 className="font-semibold text-foreground mb-3">{category}</h4>
+                                            <div className="space-y-3">
+                                                {tasks.map((subtask, index) => (
+                                                    <div key={index} className="flex items-start gap-3">
+                                                        <Checkbox id={`${category}-${index}`} checked={subtask.completed} className="mt-1" />
+                                                        <label htmlFor={`${category}-${index}`} className="text-sm text-muted-foreground">{subtask.task}</label>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                                 {Object.keys(groupedTasks).length === 0 && (
-                                    <div className="text-center text-muted-foreground">
+                                    ))
+                                ) : (
+                                     <div className="text-center text-muted-foreground py-8">
                                         <p>No sub-tasks for this requirement.</p>
                                     </div>
                                 )}
+
+                                <Separator />
+                                
+                                <div className="space-y-4">
+                                     <h4 className="font-semibold text-foreground">Update with AI</h4>
+                                      <Textarea 
+                                        placeholder="e.g., Add two-factor authentication and enhance mobile responsiveness for the form."
+                                        value={editPrompt}
+                                        onChange={(e) => setEditPrompt(e.target.value)}
+                                        rows={4}
+                                    />
+                                    <Button onClick={handleUpdateSubtasks} className="w-full">Update Sub-Tasks</Button>
+                                </div>
+
                             </div>
                         )}
                     </div>
                 </SheetContent>
             </Sheet>
-            
-             <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Edit Requirement</DialogTitle>
-                        <DialogDescription>
-                            Enter a prompt to update the requirement details. Our AI will process your request.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <Textarea 
-                            placeholder="e.g., Add two-factor authentication and enhance mobile responsiveness for the form."
-                            value={editPrompt}
-                            onChange={(e) => setEditPrompt(e.target.value)}
-                            rows={4}
-                        />
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSaveEdit}>Save</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
 
             <Dialog open={!!previewImage} onOpenChange={(isOpen) => !isOpen && setPreviewImage(null)}>
                 <DialogContent className="max-w-3xl">
-                     <DialogTitle>
-                        <VisuallyHidden>Image Preview</VisuallyHidden>
-                    </DialogTitle>
+                     <DialogHeader>
+                        <DialogTitle>
+                            <VisuallyHidden>Image Preview</VisuallyHidden>
+                        </DialogTitle>
+                     </DialogHeader>
                     {previewImage && <Image src={previewImage} alt="Preview" width={1200} height={800} className="object-contain rounded-md" />}
                 </DialogContent>
             </Dialog>
         </>
     )
 }
+
+    
