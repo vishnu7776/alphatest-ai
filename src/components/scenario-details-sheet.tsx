@@ -137,7 +137,7 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                         {activeTab === 'workflow' && (
                             <div className="flex justify-center">
                                 <Image 
-                                    src="/sampleFlowChart.png" 
+                                    src="/sampleFlowChart.png?v=2" 
                                     alt="Workflow Chart" 
                                     width={500} 
                                     height={700}
