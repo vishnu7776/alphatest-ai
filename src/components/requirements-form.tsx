@@ -65,23 +65,18 @@ const suggestions = [
         "title": "Missing Country / Regional Information",
         "message": "With Country Details we can accurately map the relevant compliance with it.",
         "priority": "high",
-        "action": "Fetch Automatically",
-        "actionVariant": "destructive"
     },
     {
         "id": "suggestion-2",
         "title": "Identified Compliance Gaps- HIPAA",
         "message": "Provide a detailed section on how your system will handle sensitive patient data, including encryption, access controls, and data retention policies.",
         "priority": "medium",
-        "action": "Add"
     },
     {
         "id": "suggestion-3",
         "title": "Incomplete Login Screen Details",
         "message": "Add a dedicated section for 'Authentication and Session Management' to cover these details comprehensively.",
         "priority": "low",
-        "action": "Add",
-        "actionVariant": "outline"
 
     },
     {
@@ -89,8 +84,6 @@ const suggestions = [
         "title": "Missing Non-Functional Requirements",
         "message": "Add non-functional requirements for performance (e.g., 'the history must load in under 2 seconds') and security (e.g., 'data must be encrypted at rest').",
         "priority": "low",
-        "action": "Add",
-        "actionVariant": "outline"
     }
 ]
 
@@ -127,6 +120,7 @@ function RequirementsFormContent() {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showValidation, setShowValidation] = useState(searchParams.get('step') === 'validate');
+  const [addedSuggestions, setAddedSuggestions] = useState<string[]>([]);
 
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -280,13 +274,24 @@ function RequirementsFormContent() {
   
   const handleFormAction = (formData: FormData) => {
     setIsLoading(true);
-    // If a file was uploaded, we use its content. Otherwise, we use the text area.
     const requirements = fileContent || requirementsText;
     formData.set('requirements', requirements);
     formAction(formData);
   };
 
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleProceed = () => {
+    setIsUpdating(true);
+    setTimeout(() => {
+        router.push('/test-cases');
+        setIsUpdating(false);
+    }, 2000);
+  }
+
+  const handleAddSuggestion = (suggestionId: string) => {
+    setAddedSuggestions((prev) => [...prev, suggestionId]);
+  }
 
   if (isUpdating) {
     return (
@@ -299,7 +304,7 @@ function RequirementsFormContent() {
   
   if (showValidation) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 pb-24">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Requirement Document Validation</h1>
           <p className="text-muted-foreground">Please review the findings below and update your document accordingly.</p>
@@ -315,24 +320,28 @@ function RequirementsFormContent() {
                             <h4 className="font-semibold">{suggestion.title}</h4>
                             <p className="text-sm text-muted-foreground">{suggestion.message}</p>
                         </div>
-                        <Button size="sm" variant={(suggestion.actionVariant as any) || 'default'}>{suggestion.action}</Button>
+                        {addedSuggestions.includes(suggestion.id) ? (
+                            <Button size="sm" variant="outline" disabled>
+                                <Check className="mr-2 h-4 w-4" />
+                                Added
+                            </Button>
+                        ) : (
+                            <Button size="sm" onClick={() => handleAddSuggestion(suggestion.id)}>Add</Button>
+                        )}
                     </CardContent>
                 </Card>
             ))}
         </div>
 
-        <div className="flex justify-end gap-4 mt-8">
-            <Button variant="outline" onClick={() => {
-                setIsUpdating(true);
-                setTimeout(() => {
-                    router.push('/test-cases');
-                }, 2000);
-            }}>
-                Update Document & Re-validate
-            </Button>
-            <Button onClick={() => router.push('/test-cases')}>
-                Proceed with warning
-            </Button>
+        <div className="fixed bottom-0 left-0 right-0 lg:left-[--sidebar-width] p-4 bg-background/80 backdrop-blur-sm border-t border-border z-10">
+            <div className="flex justify-end gap-4 max-w-5xl mx-auto">
+                <Button variant="outline" onClick={handleProceed}>
+                    Proceed with warning
+                </Button>
+                <Button onClick={handleProceed}>
+                    Update Document & Re-validate
+                </Button>
+            </div>
         </div>
       </div>
     );
@@ -395,7 +404,7 @@ function RequirementsFormContent() {
               </label>
               <Textarea
                 id="requirements-text"
-                name="requirements"
+                name="requirements-text-area"
                 placeholder="e.g., The system must allow users to log in with their email and password."
                 className="mt-2"
                 rows={5}
