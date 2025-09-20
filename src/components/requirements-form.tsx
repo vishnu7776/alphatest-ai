@@ -60,47 +60,6 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
   );
 }
 
-const suggestions = [
-    {
-        "id": "suggestion-1",
-        "title": "Missing Country / Regional Information",
-        "message": "With Country Details we can accurately map the relevant compliance with it.",
-        "priority": "high",
-    },
-    {
-        "id": "suggestion-2",
-        "title": "Identified Compliance Gaps- HIPAA",
-        "message": "Provide a detailed section on how your system will handle sensitive patient data, including encryption, access controls, and data retention policies.",
-        "priority": "medium",
-    },
-    {
-        "id": "suggestion-3",
-        "title": "Incomplete Login Screen Details",
-        "message": "Add a dedicated section for 'Authentication and Session Management' to cover these details comprehensively.",
-        "priority": "low",
-
-    },
-    {
-        "id": "suggestion-4",
-        "title": "Missing Non-Functional Requirements",
-        "message": "Add non-functional requirements for performance (e.g., 'the history must load in under 2 seconds') and security (e.g., 'data must be encrypted at rest').",
-        "priority": "low",
-    }
-]
-
-const getIconForPriority = (priority: string) => {
-    switch (priority) {
-        case 'high':
-            return <FileWarning className="h-8 w-8 text-destructive mt-1 flex-shrink-0" />;
-        case 'medium':
-            return <AlertTriangle className="h-8 w-8 text-yellow-500 mt-1 flex-shrink-0" />;
-        case 'low':
-            return <Info className="h-8 w-8 text-blue-500 mt-1 flex-shrink-0" />;
-        default:
-            return <Info className="h-8 w-8 text-blue-500 mt-1 flex-shrink-0" />;
-    }
-}
-
 function RequirementsFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -458,8 +417,8 @@ function RequirementsFormContent() {
              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
              <Button onClick={() => {
                 setShowModal(false);
-                router.push('/requirements/list');
-                toast({ title: "Success", description: "Analysis complete. Please review the requirement list."});
+                router.push('/requirements/validate');
+                toast({ title: "Success", description: "Analysis complete. Please review the suggestions."});
               }}>Continue</Button>
           </DialogFooter>
         </DialogContent>
