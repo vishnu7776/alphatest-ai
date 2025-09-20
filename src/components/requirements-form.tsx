@@ -21,7 +21,8 @@ import {
   Info,
   BookOpen,
   AlertTriangle,
-  FileWarning
+  FileWarning,
+  Trash2,
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from './ui/progress';
@@ -293,6 +294,10 @@ function RequirementsFormContent() {
     setAddedSuggestions((prev) => [...prev, suggestionId]);
   }
 
+  const handleRemoveSuggestion = (suggestionId: string) => {
+    setAddedSuggestions((prev) => prev.filter((id) => id !== suggestionId));
+  };
+
   if (isUpdating) {
     return (
        <div className="flex flex-col items-center justify-center gap-4 h-64">
@@ -320,14 +325,22 @@ function RequirementsFormContent() {
                             <h4 className="font-semibold">{suggestion.title}</h4>
                             <p className="text-sm text-muted-foreground">{suggestion.message}</p>
                         </div>
-                        {addedSuggestions.includes(suggestion.id) ? (
-                            <Button size="sm" variant="outline" disabled>
-                                <Check className="mr-2 h-4 w-4" />
-                                Added
-                            </Button>
-                        ) : (
-                            <Button size="sm" onClick={() => handleAddSuggestion(suggestion.id)}>Add</Button>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {addedSuggestions.includes(suggestion.id) ? (
+                              <>
+                                <Button size="sm" variant="outline" className="bg-green-100/10 border-green-500/50 text-green-500" disabled>
+                                    <Check className="mr-2 h-4 w-4" />
+                                    Added
+                                </Button>
+                                <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => handleRemoveSuggestion(suggestion.id)}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Remove
+                                </Button>
+                              </>
+                          ) : (
+                              <Button size="sm" onClick={() => handleAddSuggestion(suggestion.id)}>Add</Button>
+                          )}
+                        </div>
                     </CardContent>
                 </Card>
             ))}
