@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import {
   Sheet,
@@ -19,9 +19,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Pencil, FileText } from "lucide-react";
+import { Pencil, FileText, UploadCloud, Trash2 } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { Input } from "./ui/input";
+import { cn } from "@/lib/utils";
 
 export type SubTask = {
     category: string;
@@ -51,14 +53,38 @@ interface ScenarioDetailsSheetProps {
 
 type ActiveTab = 'workflow' | 'attachments' | 'sub-tasks';
 
+
+const formatBytes = (bytes: number, decimals = 2) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+
 export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioDetailsSheetProps) {
     const [activeTab, setActiveTab] = useState<ActiveTab>('sub-tasks');
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [attachments, setAttachments] = useState<File[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     const groupedTasks = requirement.subTasks.reduce((acc, task) => {
         (acc[task.category] = acc[task.category] || []).push(task);
         return acc;
     }, {} as Record<string, SubTask[]>);
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files) {
+            setAttachments(prev => [...prev, ...Array.from(event.target.files!)]);
+        }
+    };
+
+    const handleRemoveAttachment = (index: number) => {
+        setAttachments(prev => prev.filter((_, i) => i !== index));
+    }
+
 
     return (
         <>
@@ -148,49 +174,107 @@ export function ScenarioDetailsSheet({ isOpen, onClose, requirement }: ScenarioD
                         
                         {activeTab === 'attachments' && (
                            <div className="space-y-4">
-                                <a href="/pdf/Patient Management_System_ User Stories.pdf" target="_blank" rel="noopener noreferrer">
-                                    <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-                                        <CardContent className="p-4 flex items-center gap-4">
-                                            <div className="p-3 bg-muted rounded-md flex-shrink-0">
-                                                <div className="w-6 h-6 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-sm">DOC</div>
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-foreground">Healthyme BRD v1.2</p>
-                                                <p className="text-xs text-muted-foreground">pg 2 of 10</p>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </a>
+                                <Card 
+                                    className="border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors cursor-pointer"
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    <CardContent className="p-6">
+                                        <div className="flex flex-col items-center justify-center text-center">
+                                            <UploadCloud className="h-8 w-8 text-primary" />
+                                            <p className="mt-2 text-sm font-semibold">
+                                                Click to upload or drag and drop
+                                            </p>
+                                            <p className="mt-1 text-xs text-muted-foreground">
+                                                PDF, DOC, PNG, JPG
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                    <Input 
+                                        ref={fileInputRef}
+                                        type="file" 
+                                        className="hidden" 
+                                        multiple 
+                                        onChange={handleFileChange}
+                                    />
+                                </Card>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <Card className="overflow-hidden cursor-pointer" onClick={() => setPreviewImage('/refImage1.png')}>
-                                        <CardContent className="p-0">
-                                            <Image 
-                                                src="/refImage1.png"
-                                                alt="Reference Image 1"
-                                                width={300}
-                                                height={200}
-                                                className="object-cover w-full h-auto"
-                                            />
-                                            <div className="p-3">
-                                                <p className="text-sm font-medium">Ref image v.1</p>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                     <Card className="overflow-hidden cursor-pointer" onClick={() => setPreviewImage('/refImage2.png')}>
-                                        <CardContent className="p-0">
-                                            <Image 
-                                                src="/refImage2.png"
-                                                alt="Reference Image 2"
-                                                width={300}
-                                                height={200}
-                                                className="object-cover w-full h-auto"
-                                            />
-                                            <div className="p-3">
-                                                <p className="text-sm font-medium">Ref image v.1.2</p>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                {attachments.length > 0 && (
+                                    <div className="space-y-2">
+                                        <h4 className="font-semibold text-foreground">Uploaded Files</h4>
+                                        {attachments.map((file, index) => (
+                                            <Card key={index}>
+                                                <CardContent className="p-3 flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        {file.type.startsWith('image/') ? (
+                                                            <Image 
+                                                                src={URL.createObjectURL(file)} 
+                                                                alt={file.name} 
+                                                                width={40} 
+                                                                height={40}
+                                                                className="object-cover rounded-md"
+                                                            />
+                                                        ) : (
+                                                            <FileText className="w-8 h-8 text-muted-foreground" />
+                                                        )}
+                                                        <div>
+                                                            <p className="text-sm font-medium text-foreground">{file.name}</p>
+                                                            <p className="text-xs text-muted-foreground">{formatBytes(file.size)}</p>
+                                                        </div>
+                                                    </div>
+                                                    <Button variant="ghost" size="icon" onClick={() => handleRemoveAttachment(index)}>
+                                                        <Trash2 className="w-4 h-4 text-destructive" />
+                                                    </Button>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                )}
+                                
+                                <div className="hidden">
+                                    <a href="/pdf/Patient Management_System_ User Stories.pdf" target="_blank" rel="noopener noreferrer">
+                                        <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                                            <CardContent className="p-4 flex items-center gap-4">
+                                                <div className="p-3 bg-muted rounded-md flex-shrink-0">
+                                                    <div className="w-6 h-6 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-sm">DOC</div>
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold text-foreground">Healthyme BRD v1.2</p>
+                                                    <p className="text-xs text-muted-foreground">pg 2 of 10</p>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </a>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Card className="overflow-hidden cursor-pointer" onClick={() => setPreviewImage('/refImage1.png')}>
+                                            <CardContent className="p-0">
+                                                <Image 
+                                                    src="/refImage1.png"
+                                                    alt="Reference Image 1"
+                                                    width={300}
+                                                    height={200}
+                                                    className="object-cover w-full h-auto"
+                                                />
+                                                <div className="p-3">
+                                                    <p className="text-sm font-medium">Ref image v.1</p>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                        <Card className="overflow-hidden cursor-pointer" onClick={() => setPreviewImage('/refImage2.png')}>
+                                            <CardContent className="p-0">
+                                                <Image 
+                                                    src="/refImage2.png"
+                                                    alt="Reference Image 2"
+                                                    width={300}
+                                                    height={200}
+                                                    className="object-cover w-full h-auto"
+                                                />
+                                                <div className="p-3">
+                                                    <p className="text-sm font-medium">Ref image v.1.2</p>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </div>
                                 </div>
                             </div>
                         )}
