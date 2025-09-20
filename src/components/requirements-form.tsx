@@ -59,6 +59,54 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
   );
 }
 
+const suggestions = [
+    {
+        "id": "suggestion-1",
+        "title": "Missing Country / Regional Information",
+        "message": "With Country Details we can accurately map the relevant compliance with it.",
+        "priority": "high",
+        "action": "Fetch Automatically",
+        "actionVariant": "destructive"
+    },
+    {
+        "id": "suggestion-2",
+        "title": "Identified Compliance Gaps- HIPAA",
+        "message": "Provide a detailed section on how your system will handle sensitive patient data, including encryption, access controls, and data retention policies.",
+        "priority": "medium",
+        "action": "Add"
+    },
+    {
+        "id": "suggestion-3",
+        "title": "Incomplete Login Screen Details",
+        "message": "Add a dedicated section for 'Authentication and Session Management' to cover these details comprehensively.",
+        "priority": "low",
+        "action": "Add",
+        "actionVariant": "outline"
+
+    },
+    {
+        "id": "suggestion-4",
+        "title": "Missing Non-Functional Requirements",
+        "message": "Add non-functional requirements for performance (e.g., 'the history must load in under 2 seconds') and security (e.g., 'data must be encrypted at rest').",
+        "priority": "low",
+        "action": "Add",
+        "actionVariant": "outline"
+    }
+]
+
+const getIconForPriority = (priority: string) => {
+    switch (priority) {
+        case 'high':
+            return <FileWarning className="h-8 w-8 text-destructive mt-1 flex-shrink-0" />;
+        case 'medium':
+            return <AlertTriangle className="h-8 w-8 text-yellow-500 mt-1 flex-shrink-0" />;
+        case 'low':
+            return <Info className="h-8 w-8 text-blue-500 mt-1 flex-shrink-0" />;
+        default:
+            return <Info className="h-8 w-8 text-blue-500 mt-1 flex-shrink-0" />;
+    }
+}
+
 function RequirementsFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -203,7 +251,7 @@ function RequirementsFormContent() {
     
     reader.onload = (e) => {
       const content = e.target?.result as string;
-      setRequirementsText((prev) => (prev ? prev + '\n' : '') + content);
+      setRequirementsText(content); // Replace instead of append
       setProgress(100);
     };
 
@@ -214,6 +262,7 @@ function RequirementsFormContent() {
         description: 'Failed to read the file.',
       });
       setProgress(0);
+      setFile(null);
     }
 
     reader.readAsText(fileToUpload);
@@ -222,6 +271,7 @@ function RequirementsFormContent() {
   const handleRemoveFile = () => {
     setFile(null);
     setProgress(0);
+    setRequirementsText('');
     if(fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -243,7 +293,6 @@ function RequirementsFormContent() {
     )
   }
   
-
   if (showValidation) {
     return (
       <div className="space-y-6">
@@ -252,62 +301,20 @@ function RequirementsFormContent() {
           <p className="text-muted-foreground">Please review the findings below and update your document accordingly.</p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Healthcare Compliance Check</h3>
-                <Card>
+        <div className="space-y-4">
+            <h3 className="text-lg font-semibold">AI Suggestions</h3>
+            {suggestions.map((suggestion) => (
+                 <Card key={suggestion.id}>
                     <CardContent className="p-4 flex items-start gap-4">
-                        <FileWarning className="h-8 w-8 text-destructive mt-1" />
-                        <div>
-                            <h4 className="font-semibold">Missing Country / Regional Information</h4>
-                            <p className="text-sm text-muted-foreground">With Country Details we can accurately map the relevant compliance with it.</p>
-                            <div className="mt-3 flex gap-2">
-                                <Button size="sm" variant="destructive">Fetch Automatically</Button>
-                                <Button size="sm" variant="outline">Add Manually</Button>
-                            </div>
+                        {getIconForPriority(suggestion.priority)}
+                        <div className="flex-grow">
+                            <h4 className="font-semibold">{suggestion.title}</h4>
+                            <p className="text-sm text-muted-foreground">{suggestion.message}</p>
                         </div>
+                        <Button size="sm" variant={(suggestion.actionVariant as any) || 'default'}>{suggestion.action}</Button>
                     </CardContent>
                 </Card>
-                 <Card>
-                    <CardContent className="p-4 flex items-start gap-4">
-                        <AlertTriangle className="h-8 w-8 text-yellow-500 mt-1" />
-                        <div>
-                            <h4 className="font-semibold">Identified Compliance Gaps- HIPAA</h4>
-                            <p className="text-sm text-muted-foreground">Provide a detailed section on how your system will handle sensitive patient data, including encryption, access controls, and data retention policies.</p>
-                             <div className="mt-3">
-                                <Button size="sm">Add</Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-             <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Requirement Detail Suggestions</h3>
-                <Card>
-                    <CardContent className="p-4 flex items-start gap-4">
-                        <Info className="h-8 w-8 text-blue-500 mt-1" />
-                        <div>
-                            <h4 className="font-semibold">Incomplete Login Screen Details</h4>
-                            <p className="text-sm text-muted-foreground">Add a dedicated section for 'Authentication and Session Management' to cover these details comprehensively.</p>
-                             <div className="mt-3">
-                                <Button size="sm" variant="outline">Add</Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardContent className="p-4 flex items-start gap-4">
-                        <BookOpen className="h-8 w-8 text-orange-500 mt-1" />
-                        <div>
-                            <h4 className="font-semibold">Missing Non-Functional Requirements</h4>
-                            <p className="text-sm text-muted-foreground">Add non-functional requirements for performance (e.g., 'the history must load in under 2 seconds') and security (e.g., 'data must be encrypted at rest').</p>
-                             <div className="mt-3">
-                                <Button size="sm" variant="outline">Add</Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            ))}
         </div>
 
         <div className="flex justify-end gap-4 mt-8">
@@ -315,10 +322,8 @@ function RequirementsFormContent() {
                 setIsUpdating(true);
                 setTimeout(() => {
                     router.push('/test-cases');
-                    setIsUpdating(false);
                 }, 2000);
             }}>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Update Document & Re-validate
             </Button>
             <Button onClick={() => router.push('/test-cases')}>
@@ -441,7 +446,7 @@ function RequirementsFormContent() {
                 <div className="flex items-center gap-2">
                   <Progress value={progress} className="w-full h-2" />
                 </div>
-                 { progress === 100 && <p className="text-xs text-green-500">File content added to requirements.</p>}
+                 { progress === 100 && <p className="text-xs text-green-500">File content loaded into requirements text area.</p>}
               </div>
               <Button
                 type="button"
@@ -466,7 +471,7 @@ function RequirementsFormContent() {
 
       <div className="flex justify-center">
         <div className="w-full max-w-xs">
-          <SubmitButton disabled={!requirementsText && !file} />
+          <SubmitButton disabled={!requirementsText} />
         </div>
       </div>
     </form>
