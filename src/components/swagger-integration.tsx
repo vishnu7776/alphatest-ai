@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { integrationData, type ApiEndpoint } from '@/lib/integration-data';
 import { testCaseData, type TestCase } from '@/lib/test-case-data';
-import { Folder, Link as LinkIcon, Flag, Play } from 'lucide-react';
+import { Folder, Play } from 'lucide-react';
 import { Button } from './ui/button';
 
 
@@ -38,10 +38,6 @@ const MappedApiCard = ({ endpoint }: { endpoint: ApiEndpoint }) => {
                     {getMethodBadge(endpoint.method)}
                     <span className="font-mono text-sm font-semibold text-foreground">{endpoint.path}</span>
                     <span className="text-sm text-muted-foreground ml-4 truncate hidden md:block flex-1">{endpoint.summary}</span>
-                     <Button size="sm" className="ml-auto">
-                        <Play className="h-4 w-4 md:mr-2" />
-                        <span className='hidden md:inline'>Run</span>
-                    </Button>
                 </div>
             </CardContent>
         </Card>
@@ -76,13 +72,19 @@ export const SwaggerIntegration = ({ requirementId }: { requirementId: string })
             <Accordion type="multiple" defaultValue={allTestCaseIds} className="w-full space-y-2">
                 {testCasesWithApis.map(testCase => (
                     <AccordionItem value={testCase.id} key={testCase.id} className="border rounded-lg overflow-hidden">
-                        <AccordionTrigger className="p-3 hover:no-underline bg-muted/30 hover:bg-muted/60">
-                            <div className="flex items-center gap-4 w-full">
-                                <Folder className="h-5 w-5 text-primary" />
-                                <span className="font-semibold text-sm text-foreground">{testCase.id}: {testCase.title}</span>
-                                <Badge variant="secondary" className="ml-auto">{testCase.mappedApis.length} APIs</Badge>
-                            </div>
-                        </AccordionTrigger>
+                        <div className="flex items-center pr-3 bg-muted/30 hover:bg-muted/60">
+                            <AccordionTrigger className="p-3 hover:no-underline flex-1">
+                                <div className="flex items-center gap-4 w-full">
+                                    <Folder className="h-5 w-5 text-primary" />
+                                    <span className="font-semibold text-sm text-foreground">{testCase.id}: {testCase.title}</span>
+                                    <Badge variant="secondary" className="ml-auto">{testCase.mappedApis.length} APIs</Badge>
+                                </div>
+                            </AccordionTrigger>
+                            <Button size="sm" className="ml-auto">
+                                <Play className="h-4 w-4 md:mr-2" />
+                                <span className='hidden md:inline'>Run</span>
+                            </Button>
+                        </div>
                         <AccordionContent className="p-4 pt-2">
                             <div className="space-y-2">
                                {testCase.mappedApis.length > 0 ? (
