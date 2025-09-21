@@ -63,10 +63,12 @@ export const SwaggerIntegration = ({ requirementId }: { requirementId: string })
     return { ...tc, mappedApis };
   });
 
+  const allTestCaseIds = testCasesWithApis.map(tc => tc.id);
+
   return (
     <Card>
         <CardContent className="p-4">
-            <Accordion type="single" collapsible className="w-full space-y-2">
+            <Accordion type="multiple" defaultValue={allTestCaseIds} className="w-full space-y-2">
                 {testCasesWithApis.map(testCase => (
                     <AccordionItem value={testCase.id} key={testCase.id} className="border rounded-lg overflow-hidden">
                         <AccordionTrigger className="p-3 hover:no-underline bg-muted/30 hover:bg-muted/60">
