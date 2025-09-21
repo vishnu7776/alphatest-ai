@@ -80,7 +80,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <SidebarMenuButton asChild isActive={isActive('/requirements')}>
                 <Link href="/requirements">
                   <FileText />
-                  <span>Requirements</span>
+                  <span>Add requirements</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
