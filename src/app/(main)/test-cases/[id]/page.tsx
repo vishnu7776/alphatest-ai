@@ -7,6 +7,13 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import {
   Tabs,
@@ -14,13 +21,26 @@ import {
   TabsTrigger,
   TabsContent,
 } from '@/components/ui/tabs';
-import { Link as LinkIcon, Flag } from 'lucide-react';
+import { Link as LinkIcon, Flag, Eye } from 'lucide-react';
 import { BackButton } from '@/components/back-button';
 import { SwaggerIntegration } from '@/components/swagger-integration';
 import { testCaseData } from '@/lib/test-case-data';
 import type { Requirement, TestCase } from '@/lib/test-case-data';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
+const getPriorityBadge = (priority: TestCase['priority']) => {
+    switch (priority) {
+        case 'High':
+            return <Badge variant="destructive" className="capitalize">{priority}</Badge>;
+        case 'Medium':
+            return <Badge className="bg-yellow-500 hover:bg-yellow-500/80 capitalize">{priority}</Badge>;
+        case 'Low':
+            return <Badge className="bg-blue-500 hover:bg-blue-500/80 capitalize">{priority}</Badge>;
+        default:
+            return <Badge variant="secondary" className="capitalize">{priority}</Badge>;
+    }
+}
 
 const getStatusIcon = (status: TestCase['status']) => {
     switch (status) {
@@ -62,8 +82,7 @@ const AzureDevOpsIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-
-const RequirementTestCases = ({ requirement }: { requirement: Requirement }) => {
+const RequirementTestCases = ({ requirement, onTestCaseSelect }: { requirement: Requirement, onTestCaseSelect: (testCase: TestCase) => void }) => {
     return (
         <div className="space-y-4">
             <div className="grid gap-4">
@@ -81,7 +100,10 @@ const RequirementTestCases = ({ requirement }: { requirement: Requirement }) => 
                                     </div>
                                     <p className="font-semibold text-foreground mt-1">{tc.title}</p>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onTestCaseSelect(tc)}>
+                                        <Eye className="h-4 w-4" />
+                                    </Button>
                                     <Button variant="outline" size="sm" className="h-8">
                                         <JiraIcon className="mr-2"/>
                                         Jira
@@ -113,7 +135,16 @@ const RequirementTestCases = ({ requirement }: { requirement: Requirement }) => 
 
 export default function TestCaseDetailsPage() {
     const params = useParams();
+    const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
     const requirement = testCaseData.find(req => req.id === params.id);
+
+    const handleTestCaseSelect = (testCase: TestCase) => {
+        setSelectedTestCase(testCase);
+    }
+    
+    const handleCloseModal = () => {
+        setSelectedTestCase(null);
+    }
 
     if (!requirement) {
         return (
@@ -147,7 +178,7 @@ export default function TestCaseDetailsPage() {
                 <TabsContent value="test-cases" className="mt-4">
                     <Card>
                         <CardContent className="p-4">
-                            <RequirementTestCases requirement={requirement} />
+                            <RequirementTestCases requirement={requirement} onTestCaseSelect={handleTestCaseSelect} />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -155,6 +186,58 @@ export default function TestCaseDetailsPage() {
                     <SwaggerIntegration requirementId={requirement.id as string} />
                 </TabsContent>
             </Tabs>
+            
+            {selectedTestCase && (
+                <Dialog open={!!selectedTestCase} onOpenChange={(isOpen) => !isOpen && handleCloseModal()}>
+                    <DialogContent className="sm:max-w-[625px]">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-4">
+                                <span>{selectedTestCase.id}: {selectedTestCase.title}</span>
+                                {getPriorityBadge(selectedTestCase.priority)}
+                            </DialogTitle>
+                            <DialogDescription>
+                                Detailed view of the test case.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4 space-y-6 text-sm">
+                            <div className="grid grid-cols-3 gap-4">
+                                <span className="text-muted-foreground">Requirement ID</span>
+                                <span className="col-span-2 font-semibold text-foreground">{requirement.id}</span>
+                            </div>
+                             <div className="grid grid-cols-3 gap-4">
+                                <span className="text-muted-foreground">Requirement</span>
+                                <span className="col-span-2 font-semibold text-foreground">{requirement.title}</span>
+                            </div>
+
+                            <Separator />
+
+                            <div>
+                                <h4 className="font-semibold text-foreground mb-2">Pre-requisites</h4>
+                                <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                                    {selectedTestCase.preRequisites.map((prereq, index) => (
+                                        <li key={index}>{prereq}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h4 className="font-semibold text-foreground mb-2">Test Steps</h4>
+                                <ol className="list-decimal list-inside text-muted-foreground space-y-2">
+                                     {selectedTestCase.testSteps.map((step, index) => (
+                                        <li key={index}>{step}</li>
+                                    ))}
+                                </ol>
+                            </div>
+
+                             <div>
+                                <h4 className="font-semibold text-foreground mb-2">Expected Results</h4>
+                                <p className="text-muted-foreground">{selectedTestCase.expectedResult}</p>
+                            </div>
+
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
         </div>
     );
 }
