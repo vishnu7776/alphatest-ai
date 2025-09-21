@@ -117,8 +117,8 @@ export default function ProjectsPage() {
                             </div>
                         </div>
                         <Button asChild variant="outline" className="w-full mt-4">
-                            <Link href="#">
-                                View Project <ArrowUpRight className="ml-2 h-4 w-4" />
+                            <Link href="/test-cases">
+                                View Test Cases <ArrowUpRight className="ml-2 h-4 w-4" />
                             </Link>
                         </Button>
                        </div>
