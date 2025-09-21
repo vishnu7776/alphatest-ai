@@ -37,7 +37,7 @@ export const integrationData: ApiEndpoint[] = [
         parameters: [
             { name: 'patientId', in: 'path', description: 'The unique identifier of the patient.', required: true },
         ],
-        mappedTestCases: ['TC-106'],
+        mappedTestCases: ['TC-106', 'TC-101'],
     },
      {
         id: 'api-3',
@@ -48,7 +48,7 @@ export const integrationData: ApiEndpoint[] = [
         parameters: [
              { name: 'eventType', in: 'query', description: 'Filter by event type, e.g., "PATIENT_REGISTRATION".', required: false },
         ],
-        mappedTestCases: ['TC-107'],
+        mappedTestCases: ['TC-107', 'TC-101', 'TC-102'],
     },
     {
         id: 'api-4',
@@ -83,6 +83,18 @@ export const integrationData: ApiEndpoint[] = [
              { name: 'appointmentId', in: 'path', description: 'The unique identifier of the appointment.', required: true },
         ],
         mappedTestCases: ['TC-203'],
-    }
+    },
+    {
+        id: 'api-7',
+        requirementId: 'HC-REQ-001',
+        method: 'GET',
+        path: '/api/v1/patients/{patientId}/insurance',
+        summary: 'Get patient insurance details.',
+        parameters: [
+            { name: 'patientId', in: 'path', description: 'The unique identifier of the patient.', required: true },
+        ],
+        mappedTestCases: ['TC-105', 'TC-101'],
+    },
 ];
+
 
