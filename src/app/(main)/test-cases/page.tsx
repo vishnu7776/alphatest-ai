@@ -186,26 +186,28 @@ const RequirementTestCases = ({ requirement }: { requirement: Requirement }) => 
 export default function TestCasesPage() {
     return (
         <div className="space-y-6">
-            <BackButton />
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Generate Testcases</h1>
-                    <p className="text-muted-foreground">
-                        Please review the findings below and update your document accordingly.
-                    </p>
-                </div>
-                 <div className="flex items-center gap-4">
-                     <Tabs defaultValue="testcases">
-                        <TabsList>
-                            <TabsTrigger value="testcases">Testcases</TabsTrigger>
-                            <TabsTrigger value="swagger">Swagger</TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-                    <div className="relative w-full max-w-xs">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Search" className="pl-9" />
-                    </div>
-                </div>
+            <div>
+              <BackButton />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                      <h1 className="text-2xl font-bold tracking-tight">Generate Testcases</h1>
+                      <p className="text-muted-foreground">
+                          Please review the findings below and update your document accordingly.
+                      </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                      <Tabs defaultValue="testcases">
+                          <TabsList>
+                              <TabsTrigger value="testcases">Testcases</TabsTrigger>
+                              <TabsTrigger value="swagger">Swagger</TabsTrigger>
+                          </TabsList>
+                      </Tabs>
+                      <div className="relative w-full max-w-xs">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input placeholder="Search" className="pl-9" />
+                      </div>
+                  </div>
+              </div>
             </div>
 
             <Accordion type="single" collapsible defaultValue='item-0' className="w-full space-y-4">
