@@ -141,7 +141,7 @@ const RequirementTestCases = ({ requirement }: { requirement: Requirement }) => 
                 </TabsList>
             </Tabs>
             
-            <div className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
                 {filteredTestCases.map(tc => (
                     <Card key={tc.id}>
                         <CardContent className="p-4 space-y-3">
