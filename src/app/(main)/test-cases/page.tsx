@@ -1,6 +1,7 @@
 
 'use client';
 
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -9,13 +10,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
   Tabs,
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { Search, HeartPulse, FileText, ArrowUpRight } from 'lucide-react';
 import { BackButton } from '@/components/back-button';
-import Link from 'next/link';
 
 type TestCase = {
   id: string;
@@ -95,6 +101,20 @@ const testCaseData: Requirement[] = [
 ];
 
 
+const getStatusBadge = (status: TestCase['status']) => {
+    switch (status) {
+      case 'Pass':
+        return <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-200">Pass</Badge>;
+      case 'Fail':
+        return <Badge className="bg-red-100 text-red-800 border-red-200 hover:bg-red-200">Fail</Badge>;
+      case 'Inprogress':
+        return <Badge className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200">Inprogress</Badge>;
+      default:
+         return <Badge variant="secondary">New</Badge>;
+    }
+  };
+  
+
 export default function TestCasesPage() {
     return (
         <div className="space-y-6">
@@ -122,48 +142,70 @@ export default function TestCasesPage() {
               </div>
             </div>
 
-            <div className="space-y-4">
-                 {testCaseData.map((req) => (
-                    <Card key={req.id}>
-                        <CardContent className="p-4 grid grid-cols-12 items-center gap-4 w-full">
-                            <div className="col-span-12 md:col-span-3 flex items-start gap-4">
-                                <div className="p-2 rounded-full bg-primary/10">
-                                    <HeartPulse className="w-6 h-6 text-primary" />
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-foreground text-left">{req.id}: {req.title}</p>
-                                    <p className="text-xs text-muted-foreground text-left">{req.description}</p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <p className="text-xs font-semibold text-primary">{req.version}</p>
+            <Accordion type="single" collapsible className="space-y-4">
+                 {testCaseData.map((req, index) => (
+                    <AccordionItem value={`item-${index}`} key={req.id} className="border-b-0">
+                         <Card>
+                             <AccordionTrigger className="p-4 w-full hover:no-underline">
+                                <div className="grid grid-cols-12 items-center gap-4 w-full text-left">
+                                    <div className="col-span-12 md:col-span-3 flex items-start gap-4">
+                                        <div className="p-2 rounded-full bg-primary/10">
+                                            <HeartPulse className="w-6 h-6 text-primary" />
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-foreground">{req.id}: {req.title}</p>
+                                            <p className="text-xs text-muted-foreground">{req.description}</p>
+                                        </div>
+                                    </div>
+                                    <div className="col-span-12 md:col-span-2">
+                                        <Badge variant="outline">{req.type}</Badge>
+                                    </div>
+                                    <div className="col-span-12 md:col-span-3 flex items-center gap-2">
+                                        <p className="text-sm text-muted-foreground truncate">{req.deliverables}</p>
+                                    </div>
+                                    <div className="col-span-12 md:col-span-2 flex items-center gap-2">
+                                        <p className="text-sm text-muted-foreground">{req.source}</p>
+                                        <FileText className="h-4 w-4 text-muted-foreground"/>
+                                    </div>
+                                    <div className="col-span-12 md:col-span-2 flex items-center justify-end gap-4">
+                                        <div className='text-right'>
+                                            <p className="text-lg font-semibold text-foreground">{req.testCasesCount}</p>
+                                            <p className="text-xs text-muted-foreground">Test Cases</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="col-span-12 md:col-span-2">
-                                <Badge variant="outline">{req.type}</Badge>
-                            </div>
-                            <div className="col-span-12 md:col-span-3 flex items-center gap-2">
-                                <p className="text-sm text-muted-foreground truncate">{req.deliverables}</p>
-                            </div>
-                            <div className="col-span-12 md:col-span-2 flex items-center gap-2">
-                                <p className="text-sm text-muted-foreground">{req.source}</p>
-                                <FileText className="h-4 w-4 text-muted-foreground"/>
-                            </div>
-                            <div className="col-span-12 md:col-span-2 flex items-center justify-end gap-4">
-                                <div className='text-right'>
-                                  <p className="text-lg font-semibold text-foreground">{req.testCasesCount}</p>
-                                  <p className="text-xs text-muted-foreground">Test Cases</p>
+                            </AccordionTrigger>
+                            <AccordionContent className="p-4 pt-0">
+                                <div className="space-y-4">
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        {req.testCases.slice(0, 2).map(tc => (
+                                            <Card key={tc.id}>
+                                                <CardContent className="p-4 space-y-3">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <p className="text-xs text-muted-foreground font-semibold">{tc.id}</p>
+                                                            <p className="font-semibold text-foreground mt-1">{tc.title}</p>
+                                                        </div>
+                                                        {getStatusBadge(tc.status)}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <Button asChild variant="outline" size="sm">
+                                            <Link href={`/test-cases/${req.id}`}>
+                                                View All
+                                                <ArrowUpRight className="ml-2 h-4 w-4" />
+                                            </Link>
+                                        </Button>
+                                    </div>
                                 </div>
-                                <Button asChild variant="outline" size="sm">
-                                    <Link href={`/test-cases/${req.id}`}>
-                                        View All
-                                        <ArrowUpRight className="ml-2 h-4 w-4" />
-                                    </Link>
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </AccordionContent>
+                        </Card>
+                    </AccordionItem>
                  ))}
-            </div>
+            </Accordion>
         </div>
     );
 }
