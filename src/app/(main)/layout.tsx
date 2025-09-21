@@ -2,6 +2,7 @@
 "use client";
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Avatar,
@@ -32,13 +33,11 @@ import {
 import {
   Home,
   FileText,
-  ShieldCheck,
   Settings,
   LogOut,
   LifeBuoy,
   ClipboardCheck,
   LayoutGrid,
-  ChevronLeft,
 } from 'lucide-react';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -52,9 +51,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
-              <ShieldCheck className="h-6 w-6" />
-            </Button>
+            <Image src="/alphaAiLogo.svg" alt="CertiTest AI Logo" width={32} height={32} />
             <h1 className="text-lg font-semibold">CertiTest AI</h1>
           </div>
         </SidebarHeader>
@@ -100,7 +97,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <Button variant="ghost" className="justify-start w-full h-auto px-2 py-2">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://picsum.photos/seed/user/40/40" alt="User" />
+                    <AvatarImage src="/user1.svg" alt="User" />
                     <AvatarFallback>U</AvatarFallback>
                   </Avatar>
                   <div className="text-left">
@@ -139,7 +136,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="https://picsum.photos/seed/user/40/40" alt="User" />
+                  <AvatarImage src="/user1.svg" alt="User" />
                   <AvatarFallback>U</AvatarFallback>
                 </Avatar>
               </Button>
