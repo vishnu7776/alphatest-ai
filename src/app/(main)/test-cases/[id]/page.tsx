@@ -195,13 +195,12 @@ export default function TestCaseDetailsPage() {
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-4">
                                 <span>{selectedTestCase.id}: {selectedTestCase.title}</span>
-                                {getPriorityBadge(selectedTestCase.priority)}
                             </DialogTitle>
                             <DialogDescription>
                                 Detailed view of the test case.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="py-4 space-y-6 text-sm">
+                        <div className="py-4 space-y-4 text-sm">
                             <div className="grid grid-cols-3 gap-4">
                                 <span className="text-muted-foreground">Requirement ID</span>
                                 <span className="col-span-2 font-semibold text-foreground">{requirement.id}</span>
@@ -209,6 +208,10 @@ export default function TestCaseDetailsPage() {
                              <div className="grid grid-cols-3 gap-4">
                                 <span className="text-muted-foreground">Requirement</span>
                                 <span className="col-span-2 font-semibold text-foreground">{requirement.title}</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-4 items-center">
+                                <span className="text-muted-foreground">Priority</span>
+                                <div className="col-span-2">{getPriorityBadge(selectedTestCase.priority)}</div>
                             </div>
 
                             <Separator />
@@ -243,3 +246,4 @@ export default function TestCaseDetailsPage() {
         </div>
     );
 }
+
