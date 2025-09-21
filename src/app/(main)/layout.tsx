@@ -88,7 +88,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <SidebarMenuButton asChild isActive={isActive('/test-cases')}>
                 <Link href="/test-cases">
                   <ClipboardCheck />
-                  <span>Test Cases</span>
+                  <span>TRM</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -134,10 +134,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <header className="flex h-14 items-center gap-4 border-b bg-transparent px-4 lg:h-[60px] lg:px-6 sticky top-0 z-10">
           <SidebarTrigger className="lg:hidden" />
           <div className="flex-1 flex items-center gap-2">
-             <Button variant="ghost" onClick={() => router.back()} className="lg:hidden">
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
