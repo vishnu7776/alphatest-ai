@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { integrationData, type ApiEndpoint } from '@/lib/integration-data';
 import { testCaseData, type TestCase } from '@/lib/test-case-data';
+import { Folder, Link as LinkIcon, Flag } from 'lucide-react';
+
 
 const getMethodBadge = (method: string) => {
   switch (method.toUpperCase()) {
@@ -27,103 +29,61 @@ const getMethodBadge = (method: string) => {
   }
 };
 
-const MappedTestCaseCard = ({ testCaseId }: { testCaseId: string }) => {
-    const allTestCases = testCaseData.flatMap(req => req.testCases);
-    const testCase = allTestCases.find(tc => tc.id === testCaseId);
-
-    if (!testCase) {
-        return (
-            <Card>
-                <CardContent className="p-3 text-sm text-muted-foreground">
-                    Test Case {testCaseId} not found.
-                </CardContent>
-            </Card>
-        );
-    }
-    
+const MappedApiCard = ({ endpoint }: { endpoint: ApiEndpoint }) => {
     return (
         <Card className="bg-muted/50">
-            <CardContent className="p-3 text-sm">
-                <p className="font-semibold text-foreground">{testCase.id}: {testCase.title}</p>
-                <p className="text-muted-foreground mt-1">{testCase.scenario}</p>
+            <CardContent className="p-3">
+                 <div className="flex items-center gap-4 w-full">
+                    {getMethodBadge(endpoint.method)}
+                    <span className="font-mono text-sm font-semibold text-foreground">{endpoint.path}</span>
+                    <span className="text-sm text-muted-foreground ml-4 truncate hidden md:block">{endpoint.summary}</span>
+                </div>
             </CardContent>
         </Card>
     );
 };
 
-
-const ApiEndpointDetails = ({ endpoint }: { endpoint: ApiEndpoint }) => {
-    return (
-        <div className="space-y-4 py-4 px-2">
-            <div>
-                <h4 className="font-semibold text-foreground mb-2">Parameters</h4>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead>
-                            <tr className="border-b">
-                                <th className="p-2">Name</th>
-                                <th className="p-2">In</th>
-                                <th className="p-2">Description</th>
-                                <th className="p-2">Required</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {endpoint.parameters.map((param, index) => (
-                            <tr key={index} className="border-b">
-                                <td className="p-2 font-mono text-primary">{param.name}</td>
-                                <td className="p-2 text-muted-foreground">{param.in}</td>
-                                <td className="p-2">{param.description}</td>
-                                <td className="p-2">{param.required ? 'Yes' : 'No'}</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div>
-                <h4 className="font-semibold text-foreground mb-2">Mapped Test Cases</h4>
-                <div className="space-y-2">
-                    {endpoint.mappedTestCases.length > 0 ? (
-                        endpoint.mappedTestCases.map(tcId => <MappedTestCaseCard key={tcId} testCaseId={tcId} />)
-                    ) : (
-                        <p className="text-muted-foreground text-sm">No test cases mapped to this endpoint.</p>
-                    )}
-                </div>
-            </div>
-        </div>
-    )
-};
-
-
 export const SwaggerIntegration = ({ requirementId }: { requirementId: string }) => {
+  const requirement = testCaseData.find(req => req.id === requirementId);
   const requirementApis = integrationData.filter(api => api.requirementId === requirementId);
 
-  if (requirementApis.length === 0) {
+  if (!requirement) {
     return (
       <Card>
         <CardContent className="p-6 text-center text-muted-foreground">
-          No integration endpoints found for this requirement.
+          Requirement not found.
         </CardContent>
       </Card>
     );
   }
 
+  // Group APIs by test case ID
+  const testCasesWithApis = requirement.testCases.map(tc => {
+    const mappedApis = requirementApis.filter(api => api.mappedTestCases.includes(tc.id));
+    return { ...tc, mappedApis };
+  });
+
   return (
     <Card>
         <CardContent className="p-4">
             <Accordion type="single" collapsible className="w-full space-y-2">
-                {requirementApis.map(endpoint => (
-                    <AccordionItem value={endpoint.id} key={endpoint.id} className="border rounded-lg overflow-hidden">
+                {testCasesWithApis.map(testCase => (
+                    <AccordionItem value={testCase.id} key={testCase.id} className="border rounded-lg overflow-hidden">
                         <AccordionTrigger className="p-3 hover:no-underline bg-muted/30 hover:bg-muted/60">
                             <div className="flex items-center gap-4 w-full">
-                                {getMethodBadge(endpoint.method)}
-                                <span className="font-mono text-sm font-semibold text-foreground">{endpoint.path}</span>
-                                <span className="text-sm text-muted-foreground ml-4 truncate hidden md:block">{endpoint.summary}</span>
+                                <Folder className="h-5 w-5 text-primary" />
+                                <span className="font-semibold text-sm text-foreground">{testCase.id}: {testCase.title}</span>
+                                <Badge variant="secondary" className="ml-auto">{testCase.mappedApis.length} APIs</Badge>
                             </div>
                         </AccordionTrigger>
-                        <AccordionContent>
-                           <ApiEndpointDetails endpoint={endpoint} />
+                        <AccordionContent className="p-4 pt-2">
+                            <div className="space-y-2">
+                               {testCase.mappedApis.length > 0 ? (
+                                    testCase.mappedApis.map(api => <MappedApiCard key={api.id} endpoint={api} />)
+                                ) : (
+                                    <p className="text-muted-foreground text-sm text-center py-4">No APIs mapped to this test case.</p>
+                                )}
+                            </div>
                         </AccordionContent>
                     </AccordionItem>
                 ))}
@@ -132,4 +92,3 @@ export const SwaggerIntegration = ({ requirementId }: { requirementId: string })
     </Card>
   );
 };
-
