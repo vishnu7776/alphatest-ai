@@ -51,7 +51,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2">
-            <Image src="/alphaAiLogo.svg" alt="CertiTest AI Logo" width={32} height={32} />
+            <div className="bg-primary/10 p-1 rounded-lg">
+              <Image src="/alphaAiLogo.svg" alt="CertiTest AI Logo" width={32} height={32} />
+            </div>
             <h1 className="text-lg font-semibold">CertiTest AI</h1>
           </div>
         </SidebarHeader>
