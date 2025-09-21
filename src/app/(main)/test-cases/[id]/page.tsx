@@ -89,8 +89,8 @@ const RequirementTestCases = ({ requirement, onTestCaseSelect }: { requirement: 
                 {requirement.testCases.map(tc => (
                     <Card key={tc.id}>
                         <CardContent className="p-4 space-y-3">
-                            <div className="flex justify-between items-start">
-                                <div>
+                            <div className="flex justify-between items-start gap-4">
+                                <div className="flex-1">
                                     <div className="flex items-center gap-2">
                                         {getStatusIcon(tc.status)}
                                         <p className="text-xs text-muted-foreground font-semibold">{tc.id}</p>
@@ -100,19 +100,21 @@ const RequirementTestCases = ({ requirement, onTestCaseSelect }: { requirement: 
                                     </div>
                                     <p className="font-semibold text-foreground mt-1">{tc.title}</p>
                                 </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
+                                <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                                    {getStatusBadge(tc.status)}
+                                    <div className="flex items-center gap-2">
+                                        <Button variant="outline" size="sm" className="h-8">
+                                            <JiraIcon className="mr-2"/>
+                                            Jira
+                                        </Button>
+                                        <Button variant="outline" size="sm" className="h-8">
+                                            <AzureDevOpsIcon className="mr-2"/>
+                                            Azure
+                                        </Button>
+                                    </div>
                                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onTestCaseSelect(tc)}>
                                         <Eye className="h-4 w-4" />
                                     </Button>
-                                    <Button variant="outline" size="sm" className="h-8">
-                                        <JiraIcon className="mr-2"/>
-                                        Jira
-                                    </Button>
-                                     <Button variant="outline" size="sm" className="h-8">
-                                        <AzureDevOpsIcon className="mr-2"/>
-                                        Azure
-                                    </Button>
-                                    {getStatusBadge(tc.status)}
                                 </div>
                             </div>
                             <div className="grid md:grid-cols-2 gap-4 text-xs border-t pt-3">
